@@ -1,6 +1,43 @@
 #include <gtest/gtest.h>
 #include "dsp.h"
 
+class DSPTestFFT : public ::testing::Test {
+    protected:
+        dsp::ComplexFFT fft;
+};
+
+TEST_F(DSPTestFFT, validOutput) {
+    unsigned int N = 3;
+    std::vector<std::complex<double>> x = {{1.0, 0.0}, {2.0, 0.0}, {3.0, 0.0}, {4.0, 0.0}};
+    std::vector<std::complex<double>> XExpected = {{6.0, 0.0}, {-1.5, 0.8660254}, {-1.5, -0.8660254}};
+
+    std::vector<std::complex<double>> X = fft(x, N);
+    ASSERT_EQ(X.size(), XExpected.size()) << "Invalid size of the FFT signal.";
+    for (unsigned int i = 0; i < X.size(); i++) {
+        ASSERT_NEAR(X[i].real(), XExpected[i].real(), 1e-5) << "Invalid FFT signal value, real part.";
+        ASSERT_NEAR(X[i].imag(), XExpected[i].imag(), 1e-5) << "Invalid FFT signal value, imaginary part.";
+    }
+
+    XExpected = {{10.0, 0.0}, {-2.0, 2.0}, {-2.0, 0.0}, {-2.0, -2.0}};
+
+    X = fft(x);
+    ASSERT_EQ(X.size(), XExpected.size()) << "Invalid size of the FFT signal.";
+    for (unsigned int i = 0; i < X.size(); i++) {
+        ASSERT_NEAR(X[i].real(), XExpected[i].real(), 1e-5) << "Invalid FFT signal value, real part.";
+        ASSERT_NEAR(X[i].imag(), XExpected[i].imag(), 1e-5) << "Invalid FFT signal value, imaginary part.";
+    }
+
+    x = {{1.0, 0.0}, {2.0, 0.0}, {3.0, 0.0}, {4.0, 0.0}, {5.0, 0.0}};
+    XExpected = {{15.0, 0.0}, {-2.5, 3.4409548}, {-2.5, 0.81229924}, {-2.5, -0.81229924}, {-2.5, -3.4409548}};
+
+    X = fft(x);
+    ASSERT_EQ(X.size(), XExpected.size()) << "Invalid size of the FFT signal.";
+    for (unsigned int i = 0; i < X.size(); i++) {
+        ASSERT_NEAR(X[i].real(), XExpected[i].real(), 1e-5) << "Invalid FFT signal value, real part.";
+        ASSERT_NEAR(X[i].imag(), XExpected[i].imag(), 1e-5) << "Invalid FFT signal value, imaginary part.";
+    }
+}
+
 TEST(DSPTest, freqzValidOutput) {
     std::vector<double> w(0, 0.0);
     std::vector<double> b = {0.1, 0.2, 0.3};
@@ -16,6 +53,23 @@ TEST(DSPTest, freqzValidOutput) {
         ASSERT_NEAR(w[i], wExpected[i], 1e-5) << "Invalid frquency value.";
         ASSERT_NEAR(h[i].real(), hExpected[i].real(), 1e-5) << "Invalid frquency response, real part.";
         ASSERT_NEAR(h[i].imag(), hExpected[i].imag(), 1e-5) << "Invalid frquency response, imaginary part.";
+    }
+}
+
+TEST(DSPTest, lfilterValidOutput) {
+    std::vector<double> b = {0.25, 0.25, 0.25, 0.25};
+    std::vector<std::complex<double>> x = {
+        {1.0, 0.0}, {2.0, 0.0}, {3.0, 0.0}, {4.0, 0.0}, {5.0, 0.0}, {6.0, 0.0}, {7.0, 0.0}, {8.0, 0.0}
+    };
+    std::vector<std::complex<double>> yExpected = {
+        {0.25, 0.0}, {0.75, 0.0}, {1.5, 0.0}, {2.5, 0.0}, {3.5, 0.0}, {4.5, 0.0}, {5.5, 0.0}, {6.5, 0.0}
+    };
+
+    std::vector<std::complex<double>> y = dsp::lfilter(b, x);
+    ASSERT_EQ(y.size(), yExpected.size())  << "Invalid size of the filtered signal.";
+    for (unsigned int i = 0; i < y.size(); i++) {
+        ASSERT_NEAR(y[i].real(), yExpected[i].real(), 1e-5) << "Invalid filtered signal value, real part.";
+        ASSERT_NEAR(y[i].imag(), yExpected[i].imag(), 1e-5) << "Invalid filtered signal value, imaginary part.";
     }
 }
 
