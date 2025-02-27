@@ -5,6 +5,125 @@
 #include "utils.h"
 
 namespace dsp {
+    std::vector<std::complex<double>> ComplexFFT::operator()(const std::vector<std::complex<double>>& x, unsigned int N) {
+        // Adjust the number of points for FFT, accordingly.
+        unsigned int Nfft = N;
+        if (!Nfft) { Nfft = x.size(); }
+
+        // Zero-padding, if necessary.
+        std::vector<std::complex<double>> xfft = x;
+        if (xfft.size() < Nfft) { xfft.resize(Nfft, std::complex<double>(0.0, 0.0)); }
+
+        // If number of FFT points is equal to the number of 2, compute FFT using radix2.
+        if (!(Nfft & (Nfft - 1))) { return radix2(xfft); }
+
+        // For smaller signals, compute FFT using DFT.
+        if (x.size() <= Nfft && Nfft < 50) { return dft(xfft); }
+
+        // Otherwise, compute FFT using chirpZ.
+        return chirpZ(Nfft, x);
+    }
+
+    std::vector<std::complex<double>> ComplexFFT::chirpZ(unsigned int N, const std::vector<std::complex<double>>& x) {
+        // Compute convolution in next power of 2 elements atleast 2 * N - 1.
+        unsigned int Nfft = 1u << static_cast<unsigned int>(std::ceil(std::log2(2 * N - 1)));
+
+        // Define modified signal and convolution kernel.
+        std::vector<std::complex<double>> xTilde(Nfft, std::complex<double>(0.0, 0.0));
+        std::vector<std::complex<double>> k(Nfft, std::complex<double>(0.0, 0.0));
+
+        // Compute current kernel sample and modified x sample.
+        // xTilde[n] = x[n] * exp(-j x pi x n ^ 2 / N).
+        // kernel[n] = exp(j x pi x n ^ 2 / N), kernel[-n] = kernel[n].
+        std::complex<double> j(0.0, 1.0);
+        for (int n = 0; n < N; n++) {
+            double t = static_cast<double>(n * n) / static_cast<double>(N);
+            k[n] = std::exp(j * M_PI * t);
+            if (n > 0) { k[Nfft - n] = k[n]; }
+            xTilde[n] = x[n] * std::exp(-1.0 * j * M_PI * t);
+        }
+
+        // Compute FFTs of both zero-padded sequences using the radix2 FFT.
+        std::vector<std::complex<double>> Xtilde = radix2(xTilde);
+        std::vector<std::complex<double>> K = radix2(k);
+
+        // Perform convolution in frequency domain.
+        std::vector<std::complex<double>> Y(Nfft, std::complex<double>(0.0, 0.0));
+        for (unsigned int n = 0; n < Nfft; n++) { Y[n] = Xtilde[n] * K[n]; }
+
+        // Perform inverse FFT (y = conj(fft(conj(Y)))) / Nfft.
+        std::vector<std::complex<double>> Yconj(Nfft);
+        for (unsigned int n = 0; n < Nfft; n++) { Yconj[n] = std::conj(Y[n]); }
+        std::vector<std::complex<double>> y = radix2(Yconj);
+        for (unsigned int n = 0; n < Nfft; n++) { y[n] = std::conj(y[n]) / static_cast<double>(Nfft); }
+
+        // Compute chirpZ FFT of the input signal.
+        // X[n] = exp(-j x pi x n ^ 2 / N) xTilde[n] * k[n].
+        std::vector<std::complex<double>> X(N, std::complex<double>(0.0, 0.0));
+        for (unsigned int n = 0; n < N; n++) {
+            double t = static_cast<double>(n * n) / static_cast<double>(N);
+            X[n] = y[n] * std::exp(-j * M_PI * t);
+        }
+        return X;
+    }
+
+    std::vector<std::complex<double>> ComplexFFT::dft(const std::vector<std::complex<double>>& x) {
+        // Store DFT output.
+        int N = x.size();
+        std::vector<std::complex<double>> X(N, std::complex<double>(0.0, 0.0));
+
+        // Perform DFT.
+        // X[k] = x[n] * exp(-2 * j * pi * k * n / N).
+        std::complex<double> j(0.0, 1.0);
+        for (int k = 0; k < N; k++) {
+            for (int n = 0; n < N; n++) {
+                // Calculate twiddle factor.
+                double t = static_cast<double>(k * n) / static_cast<double>(N);
+                std::complex<double> W = std::exp(-2.0 * j * M_PI * t);
+
+                // Calculate current DFT sample.
+                X[k] += x[n] * W;
+            }
+        }
+        return X;
+    }
+
+    std::vector<std::complex<double>> ComplexFFT::radix2(const std::vector<std::complex<double>>& x) {
+        // Retrurn original array if it is of size 1.
+        int N = x.size();
+        if (N == 1) { return x; }
+
+        // Extract even and odd elements.
+        std::vector<std::complex<double>> Xeven(N / 2, std::complex<double>(0.0, 0.0));
+        std::vector<std::complex<double>> Xodd(N / 2, std::complex<double>(0.0, 0.0));
+        for (int n = 0; n < N / 2; n++) {
+            Xeven[n] = x[2 * n];
+            Xodd[n] = x[2 * n + 1];
+        }
+
+        // Perform radix2 recursively.
+        Xeven = radix2(Xeven);
+        Xodd = radix2(Xodd);
+
+        // Store radix2 output.
+        std::vector<std::complex<double>> X(N, std::complex<double>(0.0, 0.0));
+
+        // Combine even and odd elements using radix2 algorithm.
+        // X[k] = Xeven[x] + Xodd[k] * exp(-2 * j * M_PI * k / N).
+        // X[k + N / 2] = Xeven[x] - Xodd[k] * exp(-2 * j * M_PI * k / N).
+        std::complex<double> j(0.0, 1.0);
+        for (int k = 0; k < N / 2; k++) {
+            // Calculate twiddle factor.
+            double t = static_cast<double>(k) / static_cast<double>(N);
+            std::complex<double> W = std::exp(-2.0 * j * M_PI * t);
+
+            // Calculate current radix2 sample.
+            X[k] = Xeven[k] + W * Xodd[k];
+            X[k + N / 2] = Xeven[k] - W * Xodd[k];
+        }
+        return X;
+    }
+
     std::vector<std::complex<double>> freqz(
         std::vector<double>& w,
         const std::vector<double>& b,
@@ -28,6 +147,24 @@ namespace dsp {
             for (unsigned int n = 0; n < b.size(); n++) { h[i] += b[n] * std::exp(std::complex<double>(0, -omega * n)); }
         }
         return h;
+    }
+
+    std::vector<std::complex<double>> lfilter(
+        const std::vector<double>& b,
+        const std::vector<std::complex<double>>& x
+    ) {
+        // Calculate size of the filter and of the signal.
+        unsigned int nB = b.size();
+        unsigned int nSignal = x.size();
+
+        // Initialize empty filtered signal.
+        std::vector<std::complex<double>> y(nSignal, std::complex<double>(0.0, 0.0));
+
+        // Filter the input signal with the filter coefficients.
+        for (unsigned int n = 0; n < nSignal; n++) {
+            for (unsigned int k = 0; k < nB && k <= n; k++) { y[n] += b[k] * x[n - k]; }
+        }
+        return y;
     }
 
     std::vector<double> remez(

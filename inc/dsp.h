@@ -7,11 +7,26 @@
 #include <vector>
 
 namespace dsp {
+    class ComplexFFT {
+        private:
+            std::vector<std::complex<double>> chirpZ(unsigned int N, const std::vector<std::complex<double>>& x);
+            std::vector<std::complex<double>> dft(const std::vector<std::complex<double>>& x);
+            std::vector<std::complex<double>> radix2(const std::vector<std::complex<double>>& x);
+        public:
+            ComplexFFT() {}
+            ~ComplexFFT() {}
+
+            std::vector<std::complex<double>> operator()(const std::vector<std::complex<double>>& x, unsigned int N = 0);
+    };
     std::vector<std::complex<double>> freqz(
         std::vector<double>& w,
         const std::vector<double>& b,
         unsigned int worN = 1024,
         double fs = 1
+    );
+    std::vector<std::complex<double>> lfilter(
+        const std::vector<double>& b,
+        const std::vector<std::complex<double>>& x
     );
     std::vector<double> remez(
         unsigned int numtaps,
