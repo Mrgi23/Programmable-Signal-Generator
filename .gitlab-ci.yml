@@ -1,0 +1,80 @@
+stages:
+  - setup
+  - build
+  - test
+  - deploy
+
+workflow:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && ($CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "develop" || $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main")'
+
+variables:
+  ROOT_DIR: ${CI_PROJECT_DIR}
+  BUILD_DIR: ${CI_PROJECT_DIR}/tests/build
+  COVERAGE_CPP_DIR: ${CI_PROJECT_DIR}/htmlcov/cpp
+  COVERAGE_PY_DIR: ${CI_PROJECT_DIR}/htmlcov/python
+
+before_script:
+  - export PATH="/usr/local/bin:$PATH"
+  - mkdir -p ${BUILD_DIR}
+  - mkdir -p ${COVERAGE_CPP_DIR}
+  - mkdir -p ${COVERAGE_PY_DIR}
+
+build:
+  stage: build
+  image: ubuntu:latest
+  script:
+    - apt update && apt install -y cmake clang llvm ninja-build git
+    - cd ${BUILD_DIR}
+    - cmake ..
+    - cmake --build .
+  artifacts:
+    paths:
+      - ${BUILD_DIR}/runAllTests.exe
+    expire_in: 1 hour
+
+test_cpp:
+  stage: test
+  image: ubuntu:latest
+  script:
+    - apt update && apt install -y llvm lcov
+    - cd ${BUILD_DIR}
+    - LLVM_PROFILE_FILE=coverage.profraw ./runAllTests.exe
+    - llvm-profdata merge -sparse coverage.profraw -o coverage.profdata
+    - llvm-cov report ./runAllTests.exe -instr-profile=coverage.profdata > coverage.txt
+    - llvm-cov export ./runAllTests.exe -instr-profile=coverage.profdata -format=lcov > ${COVERAGE_CPP_DIR}/coverage.lcov
+    - genhtml ${COVERAGE_CPP_DIR}/coverage.lcov --output-directory ${COVERAGE_CPP_DIR}/
+    - cat coverage.txt
+  coverage: '/TOTAL.*\s+(\d+\.\d+)%/'
+  artifacts:
+    paths:
+      - ${COVERAGE_CPP_DIR}
+    expire_in: 1 hour
+
+test_py:
+  stage: test
+  image: python:3.10
+  script:
+    - python3 -m venv venv
+    - source venv/bin/activate
+    - pip install --upgrade pip
+    - pip install -r requirements.txt
+    - PYTHONPATH=./src/python pytest --cov=./ --cov-report=html:${COVERAGE_PY_DIR} tests/python | tee coverage.txt
+  coverage: '/TOTAL.*\s+(\d+\.\d+)%/'
+  artifacts:
+    paths:
+      - ${COVERAGE_PY_DIR}
+    expire_in: 1 hour
+
+pages:
+  stage: deploy
+  image: ubuntu:latest
+  script:
+    - mkdir -p public
+    - cp -r ${COVERAGE_CPP_DIR} public/cpp
+    - cp -r ${COVERAGE_PY_DIR} public/python
+  artifacts:
+    paths:
+      - public
+  only:
+    - main

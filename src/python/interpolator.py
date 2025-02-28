@@ -1,0 +1,50 @@
+import numpy as np
+import scipy.signal as signal
+from fir_filter import HalfBand
+
+class Interpolator():
+    def __init__(self) -> None:
+        self.halfband = HalfBand()
+
+    def __call__(self, A_dB: float, f_max: float, fs: float, input: np.ndarray) -> np.ndarray:
+        # Initialize the output signal.
+        output = input
+
+        # Propagate output signal through the interpolation 4 times.
+        for i in range(4):
+            # Upsample previous output signal by factor 2.
+            output = self.upsample(2, output)
+
+            # Calculate FIR filter coefficients.
+            factor = (2 ** i)
+            F_pass = f_max / (factor * fs)
+            b = self.halfband(A_dB, F_pass)
+
+            # Filter the upsampled signal.
+            output = self.filter(b, output)
+        return output
+
+    def filter(self, b: np.ndarray, input: np.ndarray) -> np.ndarray:
+        if len(b) < 1:
+            raise ValueError("Filter must have at least one coefficient.")
+
+        # Prepare signal for filtering by expanding its size for len(b) elements.
+        output = np.concatenate((input, input[:len(b)]))
+
+        # Filter signal.
+        output = signal.lfilter(b, 1, output)
+
+        # Remove additional elements of the signal.
+        output = output[len(b):]
+        return output
+
+    def upsample(self, n: int, input: np.ndarray) -> np.ndarray:
+        if n < 1:
+            raise ValueError("Upsample factor must be greater than 0.")
+
+        # Initialize empty output with the valid size.
+        output = np.zeros(len(input) * n, dtype=complex)
+
+        # Upsample signal by adding n-1 zeros between every element.
+        output[::n] = input[:]
+        return output

@@ -1,10 +1,9 @@
 # Programmable Signal Generator
 
 ## Description
-
 The **Programmable Signal Generator** is a fully software-simulated system designed for high-precision signal synthesis and modulation. It enables the generation of custom waveforms with fine frequency resolution, making it suitable for signal processing simulations, software-defined radio (SDR) testing, and general-purpose waveform generation.
 
-### **Key Features**
+### Key Features
 - **Fully Software-Based** – No external hardware is required.
 - **High-Precision Interpolation & Frequency Shifting** – Uses a CORDIC-based complex mixer for precise frequency shift.
 - **Multi-Language Support** – Implemented in both **Python** and **C++** for flexible performance trade-offs.
@@ -15,49 +14,14 @@ The **Programmable Signal Generator** is a fully software-simulated system desig
 - [**System Architecture**](docs/ARCHITECTURE.md) – Structural breakdown of the system.
 - [**Mathematical Background**](docs/MATH.md) – Theoretical and mathematical principles.
 - [**Testing & Validation**](docs/TESTING.md) – Methods for verifying accuracy and performance.
-
-## Setup
-To install dependencies and run the project:
-
-### **Clone the Repository**
-Clone the project using SSH:
-```bash
-git clone git@gitlab.com:Mrgi23/programmable-signal-generator.git
-cd programmable-signal-generator
-```
-### **Setup for Python**
-Create a virtual environment (optional) and install dependencies:
-```bash
-python3 -m venv venv   # Optional: Create virtual environment
-source venv/bin/activate  # Activate (Linux/macOS)
-venv\Scripts\activate     # Activate (Windows)
-
-pip install -r requirements.txt
-```
-### **Setup for C++**
-Create a build/ directory, generate Makefiles with CMake, and compile:
-```bash
-mkdir -p build && cd build
-cmake ..
-make
-```
-### **Run the Program**
-* **Python**
-    ```bash
-    python python/main.py
-    ```
-* **C++**
-    ```bash
-    ./build/signalGen.exe # Run (Linux/macOS)
-    \build\signalGen.exe # Run (Windows)
-    ```
+- [**Building Guide**](docs/BUILD.md) - Requirements and build guide.
 
 ## Authors and Acknowledgments
 ### Author
 - [**Aleksa Markovic**](https://gitlab.com/Mrgi23) – Creator & Maintainer
 
 ### Acknowledgments
-Special thanks to:
+Special thanks to
 - [**School of Electrical Engineering, University of Belgrade**](https://www.etf.bg.ac.rs/) - For inspiring this project.
 - The open-source community for valuable resources and support.
 
