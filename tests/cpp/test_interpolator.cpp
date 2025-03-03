@@ -29,6 +29,6 @@ TEST_F(TestInterpolator, validOutput) {
 }
 
 TEST_F(TestInterpolator, invalidInput) {
-    double fs = -1000; // Sampling frequency must be positive.
+    double fs = -1000.0; // Sampling frequency must be positive.
     EXPECT_THROW(interpolator(60.0, 200, fs, {1}), std::invalid_argument);
 }

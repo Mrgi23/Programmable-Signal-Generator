@@ -13,7 +13,7 @@ class ComplexMixer():
 
     def __call__(self, f_shift: float, fs: float, I_in: np.ndarray, Q_in: np.ndarray) -> np.ndarray:
         if fs <= 0:
-            raise ValueError("Sampling frequency must be greater than 0.")
+            raise ValueError("ComplexMixer.__call__: Sampling frequency must be positive.")
 
         # Calculate the word length and the maximum phase increment.
         L = int(np.ceil(np.log2(fs / self.f_res)))

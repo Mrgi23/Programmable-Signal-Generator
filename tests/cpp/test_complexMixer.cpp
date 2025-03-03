@@ -28,4 +28,7 @@ TEST_F(TestComplexMixer, validOutput) {
     }
 }
 
-TEST_F(TestComplexMixer, invalidInput) { EXPECT_THROW(complexMixer(100.0, -1000.0, {}, {}), std::invalid_argument); }
+TEST_F(TestComplexMixer, invalidInput) {
+    double fs = -1000.0; // Sampling frequency must be positive.
+    EXPECT_THROW(complexMixer(100.0, fs, {1}, {1}), std::invalid_argument);
+}

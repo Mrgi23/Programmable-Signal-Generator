@@ -8,7 +8,7 @@ std::vector<std::complex<double>> Interpolator::operator()(
     double fs,
     std::vector<std::complex<double>> input
 ) {
-    if (fs <= 0.0) { throw std::invalid_argument("Sampling frequency must be positive."); }
+    if (fs <= 0.0) { throw std::invalid_argument("Interpolator.operator(): Sampling frequency must be positive."); }
 
     // Initialize the output signal.
     std::vector<std::complex<double>> output = input;

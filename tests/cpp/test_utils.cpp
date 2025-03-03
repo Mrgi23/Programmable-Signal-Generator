@@ -40,20 +40,14 @@ TEST(UtilsTest, solveValidOutput) {
 }
 
 TEST(UtilsTest, solveSingularMatrix) {
-    std::vector<std::vector<double>> A = {{2, 1}, {4, 2}};
-    std::vector<double> b = {7, 8};
-
-    EXPECT_THROW(utils::solve(A, b), std::runtime_error);
+    std::vector<std::vector<double>> A = {{2, 1}, {4, 2}}; // Matrix is singular or nearly singular.
+    EXPECT_THROW(utils::solve(A, {7, 8}), std::runtime_error);
 }
 
 TEST(UtilsTest, solveInvalidInput) {
-    std::vector<std::vector<double>> A = {{2, 1}, {1, 3}};
-    std::vector<double> b = {7, 8, 5};
+    std::vector<double> b = {7, 8, 5}; // Vector must have the same number of rows, as the matrix.
+    EXPECT_THROW(utils::solve({{2, 1}, {1, 3}}, b), std::invalid_argument);
 
-    EXPECT_THROW(utils::solve(A, b), std::invalid_argument);
-
-    A = {{2, 1, 4}, {1, 3, 4}};
-    b = {7, 8};
-
-    EXPECT_THROW(utils::solve(A, b), std::invalid_argument);
+    std::vector<std::vector<double>> A = {{2, 1, 4}, {1, 3, 4}}; // Matrix must be square.
+    EXPECT_THROW(utils::solve(A, {7, 8}), std::invalid_argument);
 }

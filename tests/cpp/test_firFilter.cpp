@@ -30,6 +30,9 @@ TEST_F(HalfBandTest, orderIncrease) {
 TEST_F(HalfBandTest, tooHighOrder) { EXPECT_THROW(halfband(100.0, 0.23), std::length_error); }
 
 TEST_F(HalfBandTest, invalidInput) {
-    EXPECT_THROW(halfband(60.0, 0.3), std::invalid_argument);
-    EXPECT_THROW(halfband(60.0, -1.0), std::invalid_argument);
+    double Fpass = -0.1; // Passband must lie between 0.0 and 0.25.
+    EXPECT_THROW(halfband(60.0, Fpass), std::invalid_argument);
+
+    Fpass = 0.3; // Passband must lie between 0.0 and 0.25.
+    EXPECT_THROW(halfband(60.0, Fpass), std::invalid_argument);
 }

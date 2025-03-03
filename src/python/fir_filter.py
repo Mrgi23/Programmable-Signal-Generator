@@ -15,7 +15,7 @@ class HalfBand(FIR):
     def __call__(self, A_dB: float, F_pass: float) -> np.ndarray:
         # Specifications are not valid.
         if F_pass < 0.0 or F_pass > 0.25:
-            raise ValueError("Passband must lie between 0.0 and 0.25.")
+            raise ValueError("HalfBand.__call__: Passband must lie between 0.0 and 0.25.")
 
         # Passband ripple.
         delta_pass = 10 ** (-abs(A_dB) / 20)
@@ -51,4 +51,4 @@ class HalfBand(FIR):
 
             # Failsafe
             if N > 200:
-                raise ValueError("Too high order of the filter.")
+                raise ValueError("HalfBand.__call__: Too high order of the filter.")

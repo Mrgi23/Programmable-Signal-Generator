@@ -28,5 +28,5 @@ def test_halfband_order_increase(halfband_filter):
     assert(len(coeffs_lower) < len(coeffs_higher)), "Higher attenuation equals higher filter order."
 
 def test_halfband_too_high_order(halfband_filter):
-    with pytest.raises(ValueError, match="Too high order of the filter."):
+    with pytest.raises(ValueError, match="HalfBand.__call__: Too high order of the filter."):
         halfband_filter(100.0, 0.23)

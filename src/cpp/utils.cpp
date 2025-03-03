@@ -8,9 +8,9 @@ namespace utils {
         unsigned int n = A.size();
 
         // Check if A is square and if b has the correct size.
-        if (b.size() != n) { throw std::invalid_argument("Vector must have the same number of rows, as the matrix."); }
+        if (b.size() != n) { throw std::invalid_argument("solve: Vector must have the same number of rows, as the matrix."); }
         for (const auto& row : A) {
-            if (row.size() != n) { throw std::invalid_argument("Matrix must be square."); }
+            if (row.size() != n) { throw std::invalid_argument("solve: Matrix must be square."); }
         }
 
         // Forward elimination: Convert A to an upper triangular matrix.
@@ -26,7 +26,7 @@ namespace utils {
             }
 
             // If the pivot element is nearly zero, the matrix is singular.
-            if (fabs(A[pivot][i]) < 1e-12) { throw std::runtime_error("Matrix is singular or nearly singular."); }
+            if (fabs(A[pivot][i]) < 1e-12) { throw std::runtime_error("solve: Matrix is singular or nearly singular."); }
 
             // Swap the current row with the pivot row.
             std::swap(A[i], A[pivot]);

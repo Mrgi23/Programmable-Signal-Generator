@@ -43,7 +43,7 @@ namespace dsp {
         std::vector<double>& w,
         const std::vector<double>& b,
         unsigned int worN = 1024,
-        double fs = 1
+        double fs = 1.0
     );
     std::vector<std::complex<double>> lfilter(
         const std::vector<double>& b,

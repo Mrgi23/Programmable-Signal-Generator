@@ -6,7 +6,7 @@
 
 std::vector<double> HalfBand::operator()(double AdB, double Fpass) {
     // Specifications are not valid.
-    if (Fpass < 0.0 || Fpass > 0.25) { throw std::invalid_argument("Passband must lie between 0.0 and 0.25."); }
+    if (Fpass < 0.0 || Fpass > 0.25) { throw std::invalid_argument("HalfBand.operator(): Passband must lie between 0.0 and 0.25."); }
 
     // Passband ripple.
     double deltaPass = std::pow(10.0, -std::abs(AdB) / 20.0);
@@ -52,6 +52,6 @@ std::vector<double> HalfBand::operator()(double AdB, double Fpass) {
         N += 2;
 
         // Failsafe
-        if (N > 200) { throw std::length_error("Too high order of the filter."); }
+        if (N > 200) { throw std::length_error("HalfBand.operator(): Too high order of the filter."); }
     }
 }

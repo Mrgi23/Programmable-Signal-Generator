@@ -157,32 +157,32 @@ namespace dsp {
         unsigned int maxIter,
         unsigned int gridDensity
     ) {
-        if (numtaps % 2 != 0) { throw std::invalid_argument("Even number of taps required."); }
+        if (numtaps % 2 != 0) { throw std::invalid_argument("remez: Even number of taps required."); }
 
-        if (bands.size() % 2 != 0) { throw std::invalid_argument("Bands vector must have an even number of elements."); }
+        if (bands.size() % 2 != 0) { throw std::invalid_argument("remez: Bands vector must have an even number of elements."); }
         for (unsigned int i = 0; i < bands.size() - 1; i++) {
-            if (bands[i] >= bands[i + 1]) { throw std::invalid_argument("Band edges must be strictly increasing."); }
+            if (bands[i] >= bands[i + 1]) { throw std::invalid_argument("remez: Band edges must be strictly increasing."); }
         }
 
         unsigned int numBands = bands.size() / 2;
-        if (desired.size() != numBands) { throw std::invalid_argument("Desired vector must have length equal to half the number of band edges."); }
+        if (desired.size() != numBands) { throw std::invalid_argument("remez: Desired vector must have length equal to half the number of band edges."); }
 
         std::vector<double> weight;
         if (weights.empty()) {
             weight = std::vector<double>(numBands, 1.0);
         }
         else {
-            if (weights.size() != numBands) { throw std::invalid_argument("Weight vector must have length equal to half the number of band edges."); }
+            if (weights.size() != numBands) { throw std::invalid_argument("remez: Weight vector must have length equal to half the number of band edges."); }
             weight = weights;
         }
 
-        if (fs <= 0.0) { throw std::invalid_argument("Sampling frequency must be positive."); }
+        if (fs <= 0.0) { throw std::invalid_argument("remez: Sampling frequency must be positive."); }
 
         // Normalize the band edges to [0,1] (where 1 corresponds to Nyquist = fs / 2).
         std::vector<double> normBands;
         for (double b : bands) {
             double normB = b / (fs / 2.0);
-            if (normB < 0 || normB > 1) { throw std::invalid_argument("Band edges must lie between 0 and fs/2."); }
+            if (normB < 0 || normB > 1) { throw std::invalid_argument("remez: Band edges must lie between 0 and fs/2."); }
             normBands.push_back(normB);
         }
 

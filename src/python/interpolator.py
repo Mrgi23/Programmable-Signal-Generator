@@ -8,7 +8,7 @@ class Interpolator():
 
     def __call__(self, A_dB: float, f_max: float, fs: float, input: np.ndarray) -> np.ndarray:
         if fs <= 0:
-            raise ValueError("Sampling frequency must be positive.")
+            raise ValueError("Interpolator.__call__: Sampling frequency must be positive.")
 
         # Initialize the output signal.
         output = input

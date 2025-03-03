@@ -19,5 +19,5 @@ def test_interpolator_valid_output(interpolator):
     assert(np.allclose(output[output != output[f_max]], 0, atol=1e-5)), "Invalid interpolated signal value."
 
 def test_interpolator__invalid_input(interpolator):
-    with pytest.raises(ValueError, match="Sampling frequency must be positive."):
+    with pytest.raises(ValueError, match="Interpolator.__call__: Sampling frequency must be positive."):
         interpolator(60.0, 200.0, -1000.0, np.array([1]))

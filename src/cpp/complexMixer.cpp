@@ -17,7 +17,7 @@ ComplexMixer::ComplexMixer(int nIter, double fres) : nIter(nIter + 1), fres(fres
 }
 
 std::vector<double> ComplexMixer::operator()(double fshift, double fs, std::vector<double> I, std::vector<double> Q) {
-    if (fs <= 0) { throw std::invalid_argument("Sampling frequency must be greater than 0."); }
+    if (fs <= 0) { throw std::invalid_argument("ComplexMixer.operator(): Sampling frequency must be positive."); }
 
     // Calculate the word length and the maximum phase increment.
     int L = std::ceil(std::log2(fs / fres));
