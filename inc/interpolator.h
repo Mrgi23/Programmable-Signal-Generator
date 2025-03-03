@@ -10,6 +10,15 @@
 class Interpolator {
     private:
         HalfBand halfband;
+
+        std::vector<std::complex<double>> filter(
+            std::vector<double> b,
+            std::vector<std::complex<double>> input
+        );
+        std::vector<std::complex<double>> upsample(
+            unsigned int n,
+            std::vector<std::complex<double>> input
+        );
     public:
         Interpolator() {}
         ~Interpolator() {}
@@ -18,14 +27,6 @@ class Interpolator {
             double AdB,
             double fmax,
             double fs,
-            std::vector<std::complex<double>> input
-        );
-        std::vector<std::complex<double>> filter(
-            std::vector<double> b,
-            std::vector<std::complex<double>> input
-        );
-        std::vector<std::complex<double>> upsample(
-            int n,
             std::vector<std::complex<double>> input
         );
 };

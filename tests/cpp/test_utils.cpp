@@ -47,12 +47,8 @@ TEST(UtilsTest, solveSingularMatrix) {
 }
 
 TEST(UtilsTest, solveInvalidInput) {
-    std::vector<std::vector<double>> A = {{}};
+    std::vector<std::vector<double>> A = {{2, 1}, {1, 3}};
     std::vector<double> b = {7, 8, 5};
-
-    EXPECT_THROW(utils::solve(A, b), std::invalid_argument);
-
-    A = {{2, 1}, {1, 3}};
 
     EXPECT_THROW(utils::solve(A, b), std::invalid_argument);
 

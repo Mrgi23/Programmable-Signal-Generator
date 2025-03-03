@@ -7,13 +7,16 @@ class Interpolator():
         self.halfband = HalfBand()
 
     def __call__(self, A_dB: float, f_max: float, fs: float, input: np.ndarray) -> np.ndarray:
+        if fs <= 0:
+            raise ValueError("Sampling frequency must be positive.")
+
         # Initialize the output signal.
         output = input
 
         # Propagate output signal through the interpolation 4 times.
         for i in range(4):
             # Upsample previous output signal by factor 2.
-            output = self.upsample(2, output)
+            output = self.__upsample(2, output)
 
             # Calculate FIR filter coefficients.
             factor = (2 ** i)
@@ -21,13 +24,10 @@ class Interpolator():
             b = self.halfband(A_dB, F_pass)
 
             # Filter the upsampled signal.
-            output = self.filter(b, output)
+            output = self.__filter(b, output)
         return output
 
-    def filter(self, b: np.ndarray, input: np.ndarray) -> np.ndarray:
-        if len(b) < 1:
-            raise ValueError("Filter must have at least one coefficient.")
-
+    def __filter(self, b: np.ndarray, input: np.ndarray) -> np.ndarray:
         # Prepare signal for filtering by expanding its size for len(b) elements.
         output = np.concatenate((input, input[:len(b)]))
 
@@ -38,10 +38,7 @@ class Interpolator():
         output = output[len(b):]
         return output
 
-    def upsample(self, n: int, input: np.ndarray) -> np.ndarray:
-        if n < 1:
-            raise ValueError("Upsample factor must be greater than 0.")
-
+    def __upsample(self, n: int, input: np.ndarray) -> np.ndarray:
         # Initialize empty output with the valid size.
         output = np.zeros(len(input) * n, dtype=complex)
 

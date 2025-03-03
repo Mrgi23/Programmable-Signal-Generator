@@ -25,7 +25,7 @@ std::vector<double> HalfBand::operator()(double AdB, double Fpass) {
     while (1) {
         // Design the filter.
         std::vector<double> b;
-        try { b = dsp::remez(N, {0.0, 2*Fpass}, {1.0}, {1.0}); }
+        try { b = dsp::remez(N, {0.0, 2*Fpass}, {1.0}); }
         catch(const std::exception) { b = std::vector<double>(N, 0.0); }
 
         // Calculate the frequency response & the amplitude.

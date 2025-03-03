@@ -8,6 +8,8 @@ std::vector<std::complex<double>> Interpolator::operator()(
     double fs,
     std::vector<std::complex<double>> input
 ) {
+    if (fs <= 0.0) { throw std::invalid_argument("Sampling frequency must be positive."); }
+
     // Initialize the output signal.
     std::vector<std::complex<double>> output = input;
 
@@ -31,8 +33,6 @@ std::vector<std::complex<double>> Interpolator::filter(
     std::vector<double> b,
     std::vector<std::complex<double>> input
 ) {
-    if (b.size() < 1) { throw std::invalid_argument("Filter must have at least one coefficient."); }
-
     // Prepare signal for filtering by expanding its size for len(b) elements.
     std::vector<std::complex<double>> output(input.size() + b.size(), std::complex<double>(0.0, 0.0));
     for (int i = 0; i < input.size() + b.size(); i++) { output[i] = input[i % input.size()]; }
@@ -46,15 +46,13 @@ std::vector<std::complex<double>> Interpolator::filter(
 }
 
 std::vector<std::complex<double>> Interpolator::upsample(
-    int n,
+    unsigned int n,
     std::vector<std::complex<double>> input
 ) {
-    if (n < 1) { throw std::invalid_argument("Upsample factor must be greater than 0."); }
-
     // Initialize empty output with the valid size.
     std::vector<std::complex<double>> output(n * input.size(), std::complex<double>(0.0, 0.0));
 
     // Upsample signal by adding n-1 zeros between every element.
-    for (int i = 0; i < input.size(); i++) { output[i * n] = input[i]; }
+    for (unsigned int i = 0; i < input.size(); i++) { output[i * n] = input[i]; }
     return output;
 }

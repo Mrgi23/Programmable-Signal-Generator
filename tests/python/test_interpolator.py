@@ -18,31 +18,6 @@ def test_interpolator_valid_output(interpolator):
     assert(np.isclose(output[f_max], fs // 2, atol=1e-5)), "Invalid interpolated signal value."
     assert(np.allclose(output[output != output[f_max]], 0, atol=1e-5)), "Invalid interpolated signal value."
 
-def test_interpolator_filter_valid_output(interpolator):
-    b = np.array([0.25, 0.25, 0.25, 0.25])
-    input = np.array([1, 2, 3, 4, 5, 6, 7, 8])
-    output_expected = np.array([3.5, 4.5, 5.5, 6.5, 5.5, 4.5, 3.5, 2.5]).astype(complex)
-
-    output = interpolator.filter(b, input)
-    assert(output.size == input.size), "Invalid size of the filtered signal."
-    assert(np.allclose(output, output_expected, atol=1e-5)), "Invalid filtered signal value."
-
-def test_interpolator_filter_invalid_input(interpolator):
-    with pytest.raises(ValueError, match="Filter must have at least one coefficient."):
-        input = np.array([1, 2, 3, 4, 5])
-        b = np.array([])
-        interpolator.filter(b, input)
-
-def test_interpolator_upsample_valid_output(interpolator):
-    n = 3
-    input = np.array([1, 2, 3, 4, 5])
-    output_expected = np.array([1, 0, 0, 2, 0, 0, 3, 0, 0, 4, 0, 0, 5, 0, 0]).astype(complex)
-
-    output = interpolator.upsample(n, input)
-    assert(output.size == n * input.size), "Invalid size of the upsampled signal."
-    assert(np.allclose(output, output_expected, atol=1e-5)), "Invalid upsampled signal value."
-
-def test_interpolator_upsample_invalid_input(interpolator):
-    with pytest.raises(ValueError, match="Upsample factor must be greater than 0."):
-        input = np.array([1, 2, 3, 4, 5])
-        interpolator.upsample(0, input)
+def test_interpolator__invalid_input(interpolator):
+    with pytest.raises(ValueError, match="Sampling frequency must be positive."):
+        interpolator(60.0, 200.0, -1000.0, np.array([1]))

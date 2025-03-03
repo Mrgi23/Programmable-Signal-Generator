@@ -53,7 +53,7 @@ namespace dsp {
         unsigned int numtaps,
         const std::vector<double>& bands,
         const std::vector<double>& desired,
-        const std::vector<double>& weight,
+        const std::vector<double>& weights = {},
         double fs = 1.0,
         unsigned int maxIter = 25,
         unsigned int gridDensity = 16

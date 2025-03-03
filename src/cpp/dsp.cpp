@@ -152,14 +152,31 @@ namespace dsp {
         unsigned int numtaps,
         const std::vector<double>& bands,
         const std::vector<double>& desired,
-        const std::vector<double>& weight,
+        const std::vector<double>& weights,
         double fs,
         unsigned int maxIter,
         unsigned int gridDensity
     ) {
-        // Ensure an even number of taps (required for a Type II design)
         if (numtaps % 2 != 0) { throw std::invalid_argument("Even number of taps required."); }
-        unsigned int M = numtaps / 2;
+
+        if (bands.size() % 2 != 0) { throw std::invalid_argument("Bands vector must have an even number of elements."); }
+        for (unsigned int i = 0; i < bands.size() - 1; i++) {
+            if (bands[i] >= bands[i + 1]) { throw std::invalid_argument("Band edges must be strictly increasing."); }
+        }
+
+        unsigned int numBands = bands.size() / 2;
+        if (desired.size() != numBands) { throw std::invalid_argument("Desired vector must have length equal to half the number of band edges."); }
+
+        std::vector<double> weight;
+        if (weights.empty()) {
+            weight = std::vector<double>(numBands, 1.0);
+        }
+        else {
+            if (weights.size() != numBands) { throw std::invalid_argument("Weight vector must have length equal to half the number of band edges."); }
+            weight = weights;
+        }
+
+        if (fs <= 0.0) { throw std::invalid_argument("Sampling frequency must be positive."); }
 
         // Normalize the band edges to [0,1] (where 1 corresponds to Nyquist = fs / 2).
         std::vector<double> normBands;
@@ -186,6 +203,9 @@ namespace dsp {
             gridDesired.insert(gridDesired.end(), nPoints, desired[i]);
             gridWeight.insert(gridWeight.end(), nPoints, weight[i]);
         }
+
+        // For a Type I filter, set M = (numtaps - 1) / 2.
+        unsigned int M = numtaps / 2;
 
         // The number of unknown variables
         unsigned int nUnknowns = M + 1;

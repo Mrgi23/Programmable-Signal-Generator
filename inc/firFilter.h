@@ -9,13 +9,13 @@ class FIR {
     protected:
         int nPoints;
     public:
-        FIR(int nPoints = 8192) : nPoints(nPoints) {}
+        FIR(unsigned int nPoints = 8192) : nPoints(nPoints) {}
         virtual ~FIR() {}
 };
 
 class HalfBand : public FIR {
     public:
-        HalfBand(int nPoints = 8192) : FIR(nPoints) {}
+        HalfBand(unsigned int nPoints = 8192) : FIR(nPoints) {}
         ~HalfBand() override {}
 
         std::vector<double> operator()(double AdB, double Fpass);

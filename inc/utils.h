@@ -7,7 +7,7 @@
 
 namespace utils {
     template <typename T>
-    std::vector<T> linspace(T start, T end, unsigned int num, unsigned int endpoint = 1) {
+    std::vector<T> linspace(T start, T end, unsigned int num, bool endpoint = true) {
         // Initialize linspace vector.
         std::vector<T> vec;
 
@@ -19,9 +19,6 @@ namespace utils {
             vec.push_back(start);
             return vec;
         }
-
-        // Reserve num elements for the vector.
-        vec.reserve(num);
 
         // Fill in the linspace vector, with or without end element depending on endpoint.
         T step = endpoint ? (end - start) / static_cast<T>(num - 1) : (end - start) / static_cast<T>(num);

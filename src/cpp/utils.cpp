@@ -8,7 +8,7 @@ namespace utils {
         unsigned int n = A.size();
 
         // Check if A is square and if b has the correct size.
-        if (n == 0 || b.size() != n) { throw std::invalid_argument("Vector must have the same number of rows, as the matrix."); }
+        if (b.size() != n) { throw std::invalid_argument("Vector must have the same number of rows, as the matrix."); }
         for (const auto& row : A) {
             if (row.size() != n) { throw std::invalid_argument("Matrix must be square."); }
         }

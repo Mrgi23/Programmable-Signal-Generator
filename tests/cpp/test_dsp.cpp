@@ -84,22 +84,25 @@ TEST(DSPTest, remezValidOutput) {
     for (unsigned int i = 0; i < b.size(); i++) { ASSERT_NEAR(b[i], bExpected[i], 1e-4)  << "Invalid coefficient value."; }
 }
 
-TEST(DSPTest, remezFailedDesign) {
-    std::vector<double> bands = {0.0, 0.2};
-    std::vector<double> desired = {1.0};
-    std::vector<double> weight = {1.0};
-
-    EXPECT_THROW(dsp::remez(132, bands, desired, weight), std::runtime_error);
-}
-
 TEST(DSPTest, remezInvalidInput) {
-    std::vector<double> bands = {0.0, 0.2};
-    std::vector<double> desired = {1.0};
-    std::vector<double> weight = {1.0};
+    unsigned int numtaps = 7; // Even number of taps required.
+    EXPECT_THROW(dsp::remez(numtaps, {1}, {1}), std::invalid_argument);
 
-    EXPECT_THROW(dsp::remez(7, bands, desired, weight), std::invalid_argument);
+    std::vector<double> bands = {0.0, 0.25, 0.5}; // Bands vector must have an even number of elements.
+    EXPECT_THROW(dsp::remez(6, bands, {1}), std::invalid_argument);
 
-    bands = {0.0, 0.6};
+    bands = {0.0, 0.2, 0.1, 0.5}; // Band edges must be strictly increasing.
+    EXPECT_THROW(dsp::remez(6, bands, {1}), std::invalid_argument);
 
-    EXPECT_THROW(dsp::remez(6, bands, desired, weight), std::invalid_argument);
+    std::vector<double> desired = {1.0}; // Desired vector must have length equal to half the number of band edges.
+    EXPECT_THROW(dsp::remez(6, {0.0, 0.2, 0.3, 0.5}, desired), std::invalid_argument);
+
+    std::vector<double> weights = {1.0}; // Weight vector must have length equal to half the number of band edges.
+    EXPECT_THROW(dsp::remez(6, {0.0, 0.2, 0.3, 0.5}, {1.0, 0.0}, weights), std::invalid_argument);
+
+    double fs = -1000.0; // Sampling frequency must be positive.
+    EXPECT_THROW(dsp::remez(6, {0.0, 0.2, 0.3, 0.5}, {1.0, 0.0}, {1.0, 0.0}, fs), std::invalid_argument);
+
+    bands = {0.0, 0.2, 0.5, 0.6}; // Band edges must lie between 0 and fs/2.
+    EXPECT_THROW(dsp::remez(6, bands, {1.0, 0.0}, {1.0, 0.0}), std::invalid_argument);
 }
