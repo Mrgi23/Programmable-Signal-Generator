@@ -7,6 +7,7 @@ stages:
 workflow:
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && ($CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "develop" || $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main")'
+    - if: '$CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH == "main"'
 
 variables:
   ROOT_DIR: ${CI_PROJECT_DIR}
@@ -45,7 +46,7 @@ test_cpp:
     - llvm-cov export ./runAllTests.exe -instr-profile=coverage.profdata -format=lcov > ${COVERAGE_CPP_DIR}/coverage.lcov
     - genhtml ${COVERAGE_CPP_DIR}/coverage.lcov --output-directory ${COVERAGE_CPP_DIR}/
     - cat coverage.txt
-  coverage: '/TOTAL.*\s+(\d+\.\d+)%/'
+  coverage: '/TOTAL\s+\d+\s+\d+\s+\d+\.\d+%\s+\d+\s+\d+\s+\d+\.\d+%\s+\d+\s+\d+\s+(\d+\.\d+)%/'
   artifacts:
     paths:
       - ${COVERAGE_CPP_DIR}
@@ -59,8 +60,8 @@ test_py:
     - source venv/bin/activate
     - pip install --upgrade pip
     - pip install -r requirements.txt
-    - PYTHONPATH=./src/python pytest --cov=./ --cov-report=html:${COVERAGE_PY_DIR} tests/python | tee coverage.txt
-  coverage: '/TOTAL.*\s+(\d+\.\d+)%/'
+    - PYTHONPATH=./src/python pytest --cov=./ --cov-report=term --cov-report=html:${COVERAGE_PY_DIR} tests/python | tee coverage.txt
+  coverage: '/TOTAL\s+\d+\s+\d+\s+(\d+(?:\.\d+)?)%/'
   artifacts:
     paths:
       - ${COVERAGE_PY_DIR}

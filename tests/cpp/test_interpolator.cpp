@@ -5,8 +5,8 @@
 
 class TestInterpolator : public ::testing::Test {
     protected:
-        Interpolator interpolator;
         dsp::ComplexFFT fft;
+        Interpolator interpolator;
 };
 
 TEST_F(TestInterpolator, validOutput) {
@@ -21,8 +21,11 @@ TEST_F(TestInterpolator, validOutput) {
     std::vector<std::complex<double>> output = interpolator(60.0, fmax, fs, input);
     output = fft(output, N);
     ASSERT_EQ(output.size(), N) << "Invalid size of the interpolated signal.";
-    ASSERT_NEAR(abs(output[static_cast<int>(fmax)]), fs / 2, 1e-5) << "Invalid interpolated signal value.";
-    ASSERT_NEAR(abs(output[N - static_cast<int>(fmax)]), fs / 2, 1e-5) << "Invalid interpolated signal value.";
+    for (unsigned int i = 0; i < N / 2; i++) {
+        double sampleExpected = 0.0;
+        if (i == static_cast<int>(fmax)) { sampleExpected = fs / 2; }
+        ASSERT_NEAR(abs(output[i]), sampleExpected, 1e-5) << "Invalid interpolated signal value.";
+    }
 }
 
 TEST_F(TestInterpolator, filterValidOutput) {
