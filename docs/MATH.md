@@ -102,7 +102,7 @@ $$\hat{Q}[n] = I[n]\sin(\theta[n]) + Q[n]\cos(\theta[n])$$
 ![Alt text](images/complex_mixer.png)
 
 ### **Numerically Controlled Oscillator (NCO)**
-**A Numerically Controlled Oscillator (NCO)** is a digital frequency synthesizer that generates sinusoidal waveforms with high frequency resolution. An NCO operates based on a phase accumulator which increments the phase value by a fixed step size $ W$ each clock cycle. This accumulated phase is then wrapped around at $2\pi$, forming a periodic waveform. Since the **CORDIC algorithm**, which computes sine and cosine, takes multiple iterations, the NCO introduces a latency (delay).
+**A Numerically Controlled Oscillator (NCO)** is a digital frequency synthesizer that generates sinusoidal waveforms with high frequency resolution. An NCO operates based on a phase accumulator which increments the phase value by a fixed step size $W$ each clock cycle. This accumulated phase is then wrapped around at $2\pi$, forming a periodic waveform. Since the **CORDIC algorithm**, which computes sine and cosine, takes multiple iterations, the NCO introduces a latency (delay).
 
 **NCO** has two key parameter:
 - **Phase Accumulator Word Length** is the frequency resolution of the **NCO**. For the smallest frequency step the **NCO** must resolve (**frequency resolution**), minimum phase word length is:
@@ -117,13 +117,17 @@ $$W = \frac{f_{out}2^L}{f_s}$$
 ### **CORDIC algorithm**
 The **CORDIC (COordinate Rotation DIgital Computer) algorithm** is an iterative algorithm used to efficiently compute sine and cosine values using only bit shifts and additions. The **CORDIC algorithm** iteratively rotates a vector until it aligns with the desired phase, which comes from the **NCO** phase accumulator.
 
-After fixed $N$ iterations, the algorithm converges.
+After fixed number of iterations, the algorithm converges.
+
+Since the **CORDIC algorithm** output is processed by the **Digital-to-Analog Converter (DAC)**, the minimum required number of iterations depends on the precision of **DAC**.  However, because the **CORDIC algorithm** introduces internal calculation errors, additional *guard* bits are included to compensate these inaccuracies. The required number of iterations is given by::
+
+$$N_{iter} = N_{DAC} + N_{guard} = N_{DAC} + \left\lceil\ \log_{2}N_{DAC}\right\rceil$$
 
 #### Initialization
 At the beginning of the **CORDIC** algorithm inputs are set to the initial values:
 - $v_0 = x_0 + jy_0,\ (x_0,\ y_0) = (1,\ 0)$ - Initial complex unit vector
 - $z_0 = \theta[n]$ - Initial phase error from the **NCO**
-- $f_i = 1 + 2^{-i},\ i = \overline{1,\ N}$ - Precomputed rotation factors
+- $f_i = 1 + j2^{-i},\ i = \overline{1,\ N}$ - Precomputed rotation factors
 - $\alpha_i = arg(f_i) = \arctan(2^{-i})$ - Precomputed rotation angles
 
 #### Iterative Process
@@ -151,6 +155,10 @@ $$
 Each iteration reduces the **phase error**, bringing it closer to 0. After $N$ iterations the input vector has rotated by desired phase:
 
 $$v_N = \cos(\theta[n]) + j\sin(\theta[n]) = e^{jn\Omega_0}$$
+
+Each iteration produces an output that must be corrected using a scaling factor:
+
+$$K_i = \frac{1}{\sqrt{1 + 2^{-2i}}}$$
 
 ## $sinc(x)$ **Compensation Filter**
 In a **digital-to-analog converter (DAC)**, when the output is held constant between sample points (**Zero-Order Hold**), the frequency response of the system is affected by a **sinc function** distortion:

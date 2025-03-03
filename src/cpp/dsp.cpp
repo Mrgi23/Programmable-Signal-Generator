@@ -5,25 +5,6 @@
 #include "utils.h"
 
 namespace dsp {
-    std::vector<std::complex<double>> ComplexFFT::operator()(const std::vector<std::complex<double>>& x, unsigned int N) {
-        // Adjust the number of points for FFT, accordingly.
-        unsigned int Nfft = N;
-        if (!Nfft) { Nfft = x.size(); }
-
-        // Zero-padding, if necessary.
-        std::vector<std::complex<double>> xfft = x;
-        if (xfft.size() < Nfft) { xfft.resize(Nfft, std::complex<double>(0.0, 0.0)); }
-
-        // If number of FFT points is equal to the number of 2, compute FFT using radix2.
-        if (!(Nfft & (Nfft - 1))) { return radix2(xfft); }
-
-        // For smaller signals, compute FFT using DFT.
-        if (x.size() <= Nfft && Nfft < 50) { return dft(xfft); }
-
-        // Otherwise, compute FFT using chirpZ.
-        return chirpZ(Nfft, x);
-    }
-
     std::vector<std::complex<double>> ComplexFFT::chirpZ(unsigned int N, const std::vector<std::complex<double>>& x) {
         // Compute convolution in next power of 2 elements atleast 2 * N - 1.
         unsigned int Nfft = 1u << static_cast<unsigned int>(std::ceil(std::log2(2 * N - 1)));

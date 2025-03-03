@@ -13,10 +13,10 @@ def test_interpolator_valid_output(interpolator):
     input = np.sin(2 * np.pi * f_max * t)
 
     output = interpolator(60.0, f_max, fs, input)
+    assert(output.size == 16 * input.size), "Invalid size of the interpolated signal."
     output = np.abs(np.fft.fft(output))[:len(output)//2]
-    assert(output.size == 16 * input.size // 2), "Invalid size of the interpolated signal."
-    assert(np.isclose(output[f_max], fs // 2, atol=1e-5)), "Invalid frequency component."
-    assert(np.all(np.isclose(output[output != output[f_max]], 0, atol=1e-5))), "Undefined frequency component."
+    assert(np.isclose(output[f_max], fs // 2, atol=1e-5)), "Invalid interpolated signal value."
+    assert(np.allclose(output[output != output[f_max]], 0, atol=1e-5)), "Invalid interpolated signal value."
 
 def test_interpolator_filter_valid_output(interpolator):
     b = np.array([0.25, 0.25, 0.25, 0.25])
