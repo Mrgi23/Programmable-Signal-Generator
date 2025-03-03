@@ -12,7 +12,7 @@ def test_halfband_valid_output(halfband_filter):
     assert(np.isclose(coeffs[len(coeffs)//2], 0.5, atol=1e-5)), "Center coefficient should be close to 0.5."
     assert(np.all(coeffs[1::2][coeffs[1::2] != coeffs[len(coeffs)//2]]) == 0), "Every odd coefficient should be 0, except center coefficient."
 
-def test_halfband_invalid_argument(halfband_filter):
+def test_halfband_invalid_input(halfband_filter):
     f_passes = [-0.1, 0.3]
     for f_pass in f_passes:
         with pytest.raises(ValueError, match="Passband must lie between 0.0 and 0.25."):
