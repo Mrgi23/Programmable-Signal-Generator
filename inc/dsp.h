@@ -53,10 +53,7 @@ namespace dsp {
         uint worN = 1024,
         double fs = 1.0
     );
-    std::vector<std::complex<double>> lfilter(
-        const std::vector<double>& b,
-        const std::vector<std::complex<double>>& x
-    );
+    std::vector<std::complex<double>> lfilter(const std::vector<double>& b, const std::vector<std::complex<double>>& x);
     std::vector<double> remez(
         uint numtaps,
         const std::vector<double>& bands,

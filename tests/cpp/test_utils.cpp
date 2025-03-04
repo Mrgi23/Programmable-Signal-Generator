@@ -1,9 +1,11 @@
 #include <gtest/gtest.h>
 #include "utils.h"
 
+using namespace std;
+
 TEST(UtilsTest, linspaceValidOutput) {
     uint num = 0;
-    std::vector<double> vec = utils::linspace(2.0, 3.0, num);
+    vector<double> vec = utils::linspace(2.0, 3.0, num);
     ASSERT_EQ(vec.size(), num) << "Invalid linear space size.";
 
     double start = 2.0;
@@ -15,7 +17,7 @@ TEST(UtilsTest, linspaceValidOutput) {
     double end = 3.0;
     num = 5;
     bool endpoint = true;
-    std::vector<double> vecExpected = {2.0, 2.25, 2.5, 2.75, 3.0};
+    vector<double> vecExpected = {2.0, 2.25, 2.5, 2.75, 3.0};
 
     vec = utils::linspace(start, end, num, endpoint);
     ASSERT_EQ(vec.size(), num) << "Invalid linear space size.";
@@ -30,39 +32,39 @@ TEST(UtilsTest, linspaceValidOutput) {
 }
 
 TEST(UtilsTest, lstsqValidOutput) {
-    std::vector<std::vector<double>> A = {{2, 1, 4}, {1, 3, 4}};
-    std::vector<double> b = {7, 8};
-    std::vector<double> xExpected = {0.46666667, 0.73333333, 1.33333333};
+    vector<vector<double>> A = {{2, 1, 4}, {1, 3, 4}};
+    vector<double> b = {7, 8};
+    vector<double> xExpected = {0.46666667, 0.73333333, 1.33333333};
 
-    std::vector<double> x = utils::lstsq(A, b);
+    vector<double> x = utils::lstsq(A, b);
     ASSERT_EQ(x.size(), xExpected.size()) << "Invalid size of the resulting array.";
     for (uint i = 0; i < x.size(); i++) { ASSERT_NEAR(x[i], xExpected[i], 1e-5)  << "Invalid result value."; }
 }
 
 TEST(UtilsTest, lstsqInvalidInput) {
-    std::vector<double> b = {7, 8, 5}; // Vector must have the same number of rows, as the matrix.
-    EXPECT_THROW(utils::lstsq({{2, 1}, {1, 3}}, b), std::invalid_argument);
+    vector<double> b = {7, 8, 5}; // Vector must have the same number of rows, as the matrix.
+    EXPECT_THROW(utils::lstsq({{2, 1}, {1, 3}}, b), invalid_argument);
 }
 
 TEST(UtilsTest, solveValidOutput) {
-    std::vector<std::vector<double>> A = {{2, 1}, {5, 3}};
-    std::vector<double> b = {3, 7};
-    std::vector<double> xExpected = {2.0, -1.0};
+    vector<vector<double>> A = {{2, 1}, {5, 3}};
+    vector<double> b = {3, 7};
+    vector<double> xExpected = {2.0, -1.0};
 
-    std::vector<double> x = utils::solve(A, b);
+    vector<double> x = utils::solve(A, b);
     ASSERT_EQ(x.size(), xExpected.size()) << "Invalid size of the resulting array.";
     for (uint i = 0; i < x.size(); i++) { ASSERT_NEAR(x[i], xExpected[i], 1e-5)  << "Invalid result value."; }
 }
 
 TEST(UtilsTest, solveSingularMatrix) {
-    std::vector<std::vector<double>> A = {{2, 1}, {4, 2}}; // Matrix is singular or nearly singular.
-    EXPECT_THROW(utils::solve(A, {7, 8}), std::runtime_error);
+    vector<vector<double>> A = {{2, 1}, {4, 2}}; // Matrix is singular or nearly singular.
+    EXPECT_THROW(utils::solve(A, {7, 8}), runtime_error);
 }
 
 TEST(UtilsTest, solveInvalidInput) {
-    std::vector<double> b = {7, 8, 5}; // Vector must have the same number of rows, as the matrix.
-    EXPECT_THROW(utils::solve({{2, 1}, {1, 3}}, b), std::invalid_argument);
+    vector<double> b = {7, 8, 5}; // Vector must have the same number of rows, as the matrix.
+    EXPECT_THROW(utils::solve({{2, 1}, {1, 3}}, b), invalid_argument);
 
-    std::vector<std::vector<double>> A = {{2, 1, 4}, {1, 3, 4}}; // Matrix must be square.
-    EXPECT_THROW(utils::solve(A, {7, 8}), std::invalid_argument);
+    vector<vector<double>> A = {{2, 1, 4}, {1, 3, 4}}; // Matrix must be square.
+    EXPECT_THROW(utils::solve(A, {7, 8}), invalid_argument);
 }

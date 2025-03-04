@@ -12,12 +12,12 @@ class Interpolator {
         HalfBand halfband;
 
         std::vector<std::complex<double>> filter(
-            std::vector<double> b,
-            std::vector<std::complex<double>> input
+            const std::vector<double>& b,
+            const std::vector<std::complex<double>>& input
         );
         std::vector<std::complex<double>> upsample(
             uint n,
-            std::vector<std::complex<double>> input
+            const std::vector<std::complex<double>>& input
         );
     public:
         Interpolator() {}
@@ -27,7 +27,7 @@ class Interpolator {
             double AdB,
             double fmax,
             double fs,
-            std::vector<std::complex<double>> input
+            const std::vector<std::complex<double>>& input
         );
 };
 
