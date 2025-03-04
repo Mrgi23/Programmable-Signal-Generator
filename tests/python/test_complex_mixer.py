@@ -22,4 +22,4 @@ def test_complex_mixer_valid_output(complex_mixer):
 
 def test_complex_mixer_invalid_input(complex_mixer):
     with pytest.raises(ValueError, match="ComplexMixer.__call__: Sampling frequency must be positive."):
-        complex_mixer(200.0, -1000, np.array([]), np.array([]))
+        complex_mixer(200.0, -1000, np.array([1]), np.array([1]))

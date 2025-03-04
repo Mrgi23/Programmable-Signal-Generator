@@ -14,19 +14,34 @@ TEST(UtilsTest, linspaceValidOutput) {
 
     double end = 3.0;
     num = 5;
-    int endpoint = 1;
+    bool endpoint = true;
     std::vector<double> vecExpected = {2.0, 2.25, 2.5, 2.75, 3.0};
 
     vec = utils::linspace(start, end, num, endpoint);
     ASSERT_EQ(vec.size(), num) << "Invalid linear space size.";
     for (uint i = 0; i < num; i++) { ASSERT_EQ(vec[i], vecExpected[i]) << "Invalid slinear space value."; }
 
-    endpoint = 0;
+    endpoint = false;
     vecExpected = {2.0, 2.2, 2.4, 2.6, 2.8};
 
     vec = utils::linspace(start, end, num, endpoint);
     ASSERT_EQ(vec.size(), num) << "Invalid linear space size.";
     for (uint i = 0; i < num; i++) { ASSERT_EQ(vec[i], vecExpected[i]) << "Invalid slinear space value."; }
+}
+
+TEST(UtilsTest, lstsqValidOutput) {
+    std::vector<std::vector<double>> A = {{2, 1, 4}, {1, 3, 4}};
+    std::vector<double> b = {7, 8};
+    std::vector<double> xExpected = {0.46666667, 0.73333333, 1.33333333};
+
+    std::vector<double> x = utils::lstsq(A, b);
+    ASSERT_EQ(x.size(), xExpected.size()) << "Invalid size of the resulting array.";
+    for (uint i = 0; i < x.size(); i++) { ASSERT_NEAR(x[i], xExpected[i], 1e-5)  << "Invalid result value."; }
+}
+
+TEST(UtilsTest, lstsqInvalidInput) {
+    std::vector<double> b = {7, 8, 5}; // Vector must have the same number of rows, as the matrix.
+    EXPECT_THROW(utils::lstsq({{2, 1}, {1, 3}}, b), std::invalid_argument);
 }
 
 TEST(UtilsTest, solveValidOutput) {

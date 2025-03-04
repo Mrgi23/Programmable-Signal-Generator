@@ -38,6 +38,37 @@ TEST_F(DSPTestFFT, validOutput) {
     }
 }
 
+TEST(DSPTest, firlsValidOutput) {
+    int numtaps = 5;
+    std::vector<double> bands = {0.0, 0.2, 0.4, 0.5};
+    std::vector<double> desired = {1.0, 0.75, 0.0, 0.0};
+    std::vector<double> bExpected = {0.219047675, 0.077019991, 0.39487779, 0.077019991, 0.219047675};
+
+    std::vector<double> b = dsp::firls(numtaps, bands, desired);
+    ASSERT_EQ(b.size(), bExpected.size())  << "Invalid size of the coefficients.";
+    for (uint i = 0; i < b.size(); i++) { ASSERT_NEAR(b[i], bExpected[i], 1e-4)  << "Invalid coefficient value."; }
+}
+
+TEST(DSPTest, firlsInvalidInput) {
+    uint numtaps = 6; // Odd number of taps required.
+    EXPECT_THROW(dsp::firls(numtaps, {1}, {1}), std::invalid_argument);
+
+    std::vector<double> bands = {0.0, 0.25, 0.5}; // Bands vector must have even length.
+    EXPECT_THROW(dsp::firls(5, bands, {1}), std::invalid_argument);
+
+    std::vector<double> desired = {1.0}; // Desired vector must have length equal to the number of band edges.
+    EXPECT_THROW(dsp::firls(5, {0.0, 0.2, 0.3, 0.5}, desired), std::invalid_argument);
+
+    std::vector<double> weights = {1.0}; // Weight vector must have length equal to half the number of band edges.
+    EXPECT_THROW(dsp::firls(5, {0.0, 0.2, 0.3, 0.5}, {1.0, 1.0, 0.0, 0.0}, weights), std::invalid_argument);
+
+    double fs = -1000.0; // Sampling frequency must be positive.
+    EXPECT_THROW(dsp::firls(5, {0.0, 0.2, 0.3, 0.5}, {1.0, 1.0, 0.0, 0.0}, {1.0, 0.0}, fs), std::invalid_argument);
+
+    bands = {0.0, 0.2, 0.5, 1.1}; // Band edges must lie between 0 and 1, relative to Nyquist.
+    EXPECT_THROW(dsp::firls(5, bands, {1.0, 0.0}, {1.0, 0.0}), std::invalid_argument);
+}
+
 TEST(DSPTest, freqzValidOutput) {
     std::vector<double> w(0, 0.0);
     std::vector<double> b = {0.1, 0.2, 0.3};
@@ -74,12 +105,13 @@ TEST(DSPTest, lfilterValidOutput) {
 }
 
 TEST(DSPTest, remezValidOutput) {
+    uint numtaps = 6;
     std::vector<double> bands = {0.0, 0.4};
     std::vector<double> desired = {1.0};
     std::vector<double> weight = {1.0};
     std::vector<double> bExpected = {0.10753661, -0.18306401,  0.62633938,  0.62633938, -0.18306401, 0.10753661};
 
-    std::vector<double> b = dsp::remez(6, bands, desired, weight);
+    std::vector<double> b = dsp::remez(numtaps, bands, desired, weight);
     ASSERT_EQ(b.size(), bExpected.size())  << "Invalid size of the coefficients.";
     for (uint i = 0; i < b.size(); i++) { ASSERT_NEAR(b[i], bExpected[i], 1e-4)  << "Invalid coefficient value."; }
 }

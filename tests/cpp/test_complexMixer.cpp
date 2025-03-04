@@ -16,7 +16,7 @@ TEST_F(TestComplexMixer, validOutput) {
     double f = 100.0;
     std::vector<double> I = utils::linspace(0.0, 1.0, static_cast<uint>(fs), 0);
     for (uint i = 0; i < I.size(); i++) { I[i] = cos(2 * M_PI * f * I[i]); }
-    std::vector<double> Q = utils::linspace(0.0, 0.0, static_cast<uint>(fs), 0);
+    std::vector<double> Q(static_cast<uint>(fs), 0);
 
     std::vector<double> Iout = complexMixer(fshift, fs, I, Q);
     std::vector<std::complex<double>> fftIout = fft(Iout);
