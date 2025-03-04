@@ -16,7 +16,7 @@ class Interpolator {
             std::vector<std::complex<double>> input
         );
         std::vector<std::complex<double>> upsample(
-            unsigned int n,
+            uint n,
             std::vector<std::complex<double>> input
         );
     public:

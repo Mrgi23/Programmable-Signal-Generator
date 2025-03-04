@@ -9,7 +9,7 @@
 namespace dsp {
     class ComplexFFT {
         private:
-            std::vector<std::complex<double>> chirpZ(unsigned int N, const std::vector<std::complex<double>>& x);
+            std::vector<std::complex<double>> chirpZ(uint N, const std::vector<std::complex<double>>& x);
             std::vector<std::complex<double>> dft(const std::vector<std::complex<double>>& x);
             std::vector<std::complex<double>> radix2(const std::vector<std::complex<double>>& x);
         public:
@@ -17,9 +17,9 @@ namespace dsp {
             ~ComplexFFT() {}
 
             template <typename T>
-            std::vector<std::complex<double>> operator()(const std::vector<T>& x, unsigned int N = 0) {
+            std::vector<std::complex<double>> operator()(const std::vector<T>& x, uint N = 0) {
                 // Adjust the number of points for FFT, accordingly.
-                unsigned int Nfft = N;
+                uint Nfft = N;
                 if (!Nfft) { Nfft = x.size(); }
 
                 // Cast input type to complex.
@@ -42,7 +42,7 @@ namespace dsp {
     std::vector<std::complex<double>> freqz(
         std::vector<double>& w,
         const std::vector<double>& b,
-        unsigned int worN = 1024,
+        uint worN = 1024,
         double fs = 1.0
     );
     std::vector<std::complex<double>> lfilter(
@@ -50,13 +50,13 @@ namespace dsp {
         const std::vector<std::complex<double>>& x
     );
     std::vector<double> remez(
-        unsigned int numtaps,
+        uint numtaps,
         const std::vector<double>& bands,
         const std::vector<double>& desired,
         const std::vector<double>& weights = {},
         double fs = 1.0,
-        unsigned int maxIter = 25,
-        unsigned int gridDensity = 16
+        uint maxIter = 25,
+        uint gridDensity = 16
     );
 }
 

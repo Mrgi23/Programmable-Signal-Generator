@@ -12,7 +12,7 @@ std::vector<double> HalfBand::operator()(double AdB, double Fpass) {
     double deltaPass = std::pow(10.0, -std::abs(AdB) / 20.0);
 
     // Harris formula for initial filter order.
-    unsigned int N = static_cast<unsigned int>(2 * std::abs(AdB) / (23 * (0.5 - 2 * Fpass)));
+    uint N = static_cast<uint>(2 * std::abs(AdB) / (23 * (0.5 - 2 * Fpass)));
 
     // Ensure N is even (liquidDSP requires even length for Kaiser filter)
     // Force even number of taps, since scipy.remez uses numtaps instead of order.
@@ -33,7 +33,7 @@ std::vector<double> HalfBand::operator()(double AdB, double Fpass) {
 
         // Check if the filter satisfy constrains.
         int isCreated = 1;
-        for (unsigned int i = 0; i < nPoints; i++) {
+        for (uint i = 0; i < nPoints; i++) {
             if (w[i] < Fpass && std::abs(std::abs(h[i]) - 1) > 2 * deltaPass) {
                 isCreated = 0;
                 break;
@@ -43,7 +43,7 @@ std::vector<double> HalfBand::operator()(double AdB, double Fpass) {
         // Create the halfband filter
         if (isCreated) {
             std::vector<double> coeffs(2*N-1, 0);
-            for (unsigned int i = 0; i < N; i++) { coeffs[2*i] = 0.5 * b[i]; }
+            for (uint i = 0; i < N; i++) { coeffs[2*i] = 0.5 * b[i]; }
             coeffs[N-1] = 0.5;
             return coeffs;
         }

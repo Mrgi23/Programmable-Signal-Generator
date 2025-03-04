@@ -46,13 +46,13 @@ std::vector<std::complex<double>> Interpolator::filter(
 }
 
 std::vector<std::complex<double>> Interpolator::upsample(
-    unsigned int n,
+    uint n,
     std::vector<std::complex<double>> input
 ) {
     // Initialize empty output with the valid size.
     std::vector<std::complex<double>> output(n * input.size(), std::complex<double>(0.0, 0.0));
 
     // Upsample signal by adding n-1 zeros between every element.
-    for (unsigned int i = 0; i < input.size(); i++) { output[i * n] = input[i]; }
+    for (uint i = 0; i < input.size(); i++) { output[i * n] = input[i]; }
     return output;
 }

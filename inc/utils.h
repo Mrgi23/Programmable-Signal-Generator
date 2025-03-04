@@ -7,7 +7,7 @@
 
 namespace utils {
     template <typename T>
-    std::vector<T> linspace(T start, T end, unsigned int num, bool endpoint = true) {
+    std::vector<T> linspace(T start, T end, uint num, bool endpoint = true) {
         // Initialize linspace vector.
         std::vector<T> vec;
 
@@ -22,7 +22,7 @@ namespace utils {
 
         // Fill in the linspace vector, with or without end element depending on endpoint.
         T step = endpoint ? (end - start) / static_cast<T>(num - 1) : (end - start) / static_cast<T>(num);
-        for (unsigned int i = 0; i < num; i++) { vec.push_back(start + i * step); }
+        for (uint i = 0; i < num; i++) { vec.push_back(start + i * step); }
         return vec;
     }
     std::vector<double> solve(std::vector<std::vector<double>> A, std::vector<double> b);

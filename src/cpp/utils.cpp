@@ -5,7 +5,7 @@
 
 namespace utils {
     std::vector<double> solve(std::vector<std::vector<double>> A, std::vector<double> b) {
-        unsigned int n = A.size();
+        uint n = A.size();
 
         // Check if A is square and if b has the correct size.
         if (b.size() != n) { throw std::invalid_argument("solve: Vector must have the same number of rows, as the matrix."); }
@@ -14,11 +14,11 @@ namespace utils {
         }
 
         // Forward elimination: Convert A to an upper triangular matrix.
-        for (unsigned int i = 0; i < n; i++) {
+        for (uint i = 0; i < n; i++) {
             // Partial pivoting: Find the row with the largest absolute value in the current column.
             int pivot = i;
             double maxVal = fabs(A[i][i]);
-            for (unsigned int row = i + 1; row < n; row++) {
+            for (uint row = i + 1; row < n; row++) {
                 if (fabs(A[row][i]) > maxVal) {
                     maxVal = fabs(A[row][i]);
                     pivot = row;
@@ -33,9 +33,9 @@ namespace utils {
             std::swap(b[i], b[pivot]);
 
             // Eliminate the entries below the pivot.
-            for (unsigned int row = i + 1; row < n; row++) {
+            for (uint row = i + 1; row < n; row++) {
                 double factor = A[row][i] / A[i][i];
-                for (unsigned int col = i; col < n; col++)
+                for (uint col = i; col < n; col++)
                     A[row][col] -= factor * A[i][col];
                 b[row] -= factor * b[i];
             }
@@ -44,7 +44,7 @@ namespace utils {
         std::vector<double> x(n, 0.0);
         for (int i = n - 1; i >= 0; i--) {
             double sum = 0.0;
-            for (unsigned int j = i + 1; j < n; j++)
+            for (uint j = i + 1; j < n; j++)
                 sum += A[i][j] * x[j];
             x[i] = (b[i] - sum) / A[i][i];
         }

@@ -10,7 +10,7 @@ ComplexMixer::ComplexMixer(int nIter, double fres) : nIter(nIter + 1), fres(fres
     std::vector<double> real = utils::linspace(1.0, 1.0, this->nIter);
     std::vector<double> imag = utils::linspace(1.0, -static_cast<double>(this->nIter - 2), this->nIter);
     factors = std::vector<std::complex<double>>(this->nIter, 0.0);
-    for (unsigned int i = 1; i < this->nIter; i++) { factors[i] = {real[i], pow(2, imag[i])}; }
+    for (uint i = 1; i < this->nIter; i++) { factors[i] = {real[i], pow(2, imag[i])}; }
 
     // Add initial shift pi/2.
     factors[0] = std::complex<double>(0.0, 1.0);
@@ -21,11 +21,11 @@ std::vector<double> ComplexMixer::operator()(double fshift, double fs, std::vect
 
     // Calculate the word length and the maximum phase increment.
     int L = std::ceil(std::log2(fs / fres));
-    unsigned int Wmax = pow(2, L);
+    uint Wmax = pow(2, L);
 
     // Compute phase increment and accumulated phases for the desired shift frequency.
-    unsigned int W = static_cast<unsigned int>(fshift * Wmax / fs) % Wmax;
-    std::vector<unsigned int> Z = NCO(W, Wmax, I.size());
+    uint W = static_cast<uint>(fshift * Wmax / fs) % Wmax;
+    std::vector<uint> Z = NCO(W, Wmax, I.size());
 
     // Rotate the vector.
     std::vector<double> Iout = CORDIC(Wmax, Z, I, Q);
@@ -33,8 +33,8 @@ std::vector<double> ComplexMixer::operator()(double fshift, double fs, std::vect
 }
 
 std::vector<double> ComplexMixer::CORDIC(
-    unsigned int Wmax,
-    std::vector<unsigned int> Z,
+    uint Wmax,
+    std::vector<uint> Z,
     std::vector<double> I,
     std::vector<double> Q
 ) {
@@ -43,7 +43,7 @@ std::vector<double> ComplexMixer::CORDIC(
 
     // Iterate through the complex input signal samples.
     std::complex<double> j(0.0, 1.0);
-    for (unsigned int i = 0; i < I.size(); i++) {
+    for (uint i = 0; i < I.size(); i++) {
         // Current complex sample.
         std::complex<double> v(I[i], Q[i]);
 
@@ -76,9 +76,9 @@ std::vector<double> ComplexMixer::CORDIC(
     return Iout;
 }
 
-std::vector<unsigned int> ComplexMixer::NCO(unsigned int W, unsigned int Wmax, unsigned int nPoints) {
+std::vector<uint> ComplexMixer::NCO(uint W, uint Wmax, uint nPoints) {
     // Compute accumulated phases and wrap them around Wmax.
-    std::vector<unsigned int> Z = utils::linspace(0U, (nPoints + 1), nPoints + 1, 0);
-    for (unsigned int i = 0; i < nPoints+1; i++) { Z[i] = (Z[i] * W) % Wmax; }
+    std::vector<uint> Z = utils::linspace(0U, (nPoints + 1), nPoints + 1, 0);
+    for (uint i = 0; i < nPoints+1; i++) { Z[i] = (Z[i] * W) % Wmax; }
     return Z;
 }

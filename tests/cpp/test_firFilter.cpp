@@ -10,7 +10,7 @@ TEST_F(HalfBandTest, validOutput) {
     std::vector<double> coeffs = halfband(60.0, 0.2);
     ASSERT_GT(coeffs.size(), 0) << "Filter coiefficients should not be empty array.";
     ASSERT_NEAR(coeffs[coeffs.size()/2], 0.5, 1e-5) << "Center coefficient should be close to 0.5.";
-    for (unsigned int i = 0; i < coeffs.size(); i++) {
+    for (uint i = 0; i < coeffs.size(); i++) {
         if (i % 2 && i != coeffs.size() / 2) {
             ASSERT_EQ(coeffs[i], 0.0) << "Every odd coefficient should be 0, except center coefficient.";
         }

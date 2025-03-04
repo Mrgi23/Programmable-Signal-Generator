@@ -2,7 +2,7 @@
 #include "utils.h"
 
 TEST(UtilsTest, linspaceValidOutput) {
-    unsigned int num = 0;
+    uint num = 0;
     std::vector<double> vec = utils::linspace(2.0, 3.0, num);
     ASSERT_EQ(vec.size(), num) << "Invalid linear space size.";
 
@@ -19,14 +19,14 @@ TEST(UtilsTest, linspaceValidOutput) {
 
     vec = utils::linspace(start, end, num, endpoint);
     ASSERT_EQ(vec.size(), num) << "Invalid linear space size.";
-    for (unsigned int i = 0; i < num; i++) { ASSERT_EQ(vec[i], vecExpected[i]) << "Invalid slinear space value."; }
+    for (uint i = 0; i < num; i++) { ASSERT_EQ(vec[i], vecExpected[i]) << "Invalid slinear space value."; }
 
     endpoint = 0;
     vecExpected = {2.0, 2.2, 2.4, 2.6, 2.8};
 
     vec = utils::linspace(start, end, num, endpoint);
     ASSERT_EQ(vec.size(), num) << "Invalid linear space size.";
-    for (unsigned int i = 0; i < num; i++) { ASSERT_EQ(vec[i], vecExpected[i]) << "Invalid slinear space value."; }
+    for (uint i = 0; i < num; i++) { ASSERT_EQ(vec[i], vecExpected[i]) << "Invalid slinear space value."; }
 }
 
 TEST(UtilsTest, solveValidOutput) {
@@ -36,7 +36,7 @@ TEST(UtilsTest, solveValidOutput) {
 
     std::vector<double> x = utils::solve(A, b);
     ASSERT_EQ(x.size(), xExpected.size()) << "Invalid size of the resulting array.";
-    for (unsigned int i = 0; i < x.size(); i++) { ASSERT_NEAR(x[i], xExpected[i], 1e-5)  << "Invalid result value."; }
+    for (uint i = 0; i < x.size(); i++) { ASSERT_NEAR(x[i], xExpected[i], 1e-5)  << "Invalid result value."; }
 }
 
 TEST(UtilsTest, solveSingularMatrix) {

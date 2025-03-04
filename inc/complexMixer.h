@@ -13,12 +13,12 @@ class ComplexMixer {
         std::vector<std::complex<double>> factors;
 
         std::vector<double> CORDIC(
-            unsigned int Wmax,
-            std::vector<unsigned int> Z,
+            uint Wmax,
+            std::vector<uint> Z,
             std::vector<double> I,
             std::vector<double> Q
         );
-        std::vector<unsigned int> NCO(unsigned int W, unsigned int Wmax, unsigned int nPoints);
+        std::vector<uint> NCO(uint W, uint Wmax, uint nPoints);
     public:
         ComplexMixer(int nIter = 13, double fres = 1.0);
         ~ComplexMixer() {}
