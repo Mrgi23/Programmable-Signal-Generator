@@ -4,6 +4,42 @@
 #include "utils.h"
 
 namespace utils {
+    std::vector<double> lstsq(std::vector<std::vector<double>> A, std::vector<double> b, double lambda) {
+        uint m = A.size();
+
+        if (b.size() != m) { throw std::invalid_argument("lstsq: Vector must have the same number of rows, as the matrix."); }
+
+        uint n = A[0].size();
+
+        // For square A, solve linear system.
+        if (m == n) { return solve(A, b); }
+
+        // For non-square A, form the normal equations: A^T A * x = A^T b.
+        std::vector<std::vector<double>> AtA(n, std::vector<double>(n, 0.0));
+        for (uint i = 0; i < n; i++) {
+            for (uint j = 0; j < n; j++) {
+                double sum = 0.0;
+                for (uint k = 0; k < m; k++) { sum += A[k][i] * A[k][j]; }
+                AtA[i][j] = sum;
+
+                // Add regularization on the diagonal to avoid singularity.
+                AtA[i][j] += i == j ? lambda : 0.0;
+            }
+        }
+
+        std::vector<double> Atb(n, 0.0);
+        for (uint i = 0; i < n; i++) {
+            double sum = 0.0;
+            for (uint k = 0; k < m; k++) {
+                sum += A[k][i] * b[k];
+            }
+            Atb[i] = sum;
+        }
+
+        // Solve the square system.
+        return solve(AtA, Atb);
+    }
+
     std::vector<double> solve(std::vector<std::vector<double>> A, std::vector<double> b) {
         uint n = A.size();
 

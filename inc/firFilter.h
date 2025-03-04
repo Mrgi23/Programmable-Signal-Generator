@@ -13,6 +13,14 @@ class FIR {
         virtual ~FIR() {}
 };
 
+class InverseSinc : public FIR {
+    public:
+        InverseSinc(uint nPoints = 8192) : FIR(nPoints) {}
+        ~InverseSinc() override {}
+
+        std::vector<double> operator()(double Fpass, double errordB, uint nSpec = 16);
+};
+
 class HalfBand : public FIR {
     public:
         HalfBand(uint nPoints = 8192) : FIR(nPoints) {}

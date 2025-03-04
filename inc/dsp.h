@@ -39,6 +39,14 @@ namespace dsp {
                 return chirpZ(Nfft, xfft);
             }
     };
+    std::vector<double> firls(
+        uint numtaps,
+        const std::vector<double>& bands,
+        const std::vector<double>& desired,
+        const std::vector<double>& weights = {},
+        double fs = 2.0,
+        uint gridSize = 1024
+    );
     std::vector<std::complex<double>> freqz(
         std::vector<double>& w,
         const std::vector<double>& b,

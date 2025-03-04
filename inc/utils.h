@@ -25,6 +25,7 @@ namespace utils {
         for (uint i = 0; i < num; i++) { vec.push_back(start + i * step); }
         return vec;
     }
+    std::vector<double> lstsq(std::vector<std::vector<double>> A, std::vector<double> b, double lambda = 1e-12);
     std::vector<double> solve(std::vector<std::vector<double>> A, std::vector<double> b);
 }
 

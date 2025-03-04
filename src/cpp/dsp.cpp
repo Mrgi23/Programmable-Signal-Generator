@@ -105,6 +105,107 @@ namespace dsp {
         return X;
     }
 
+    std::vector<double> firls(
+        uint numtaps,
+        const std::vector<double>& bands,
+        const std::vector<double>& desired,
+        const std::vector<double>& weight,
+        double fs,
+        uint gridSize
+    ) {
+        if (numtaps % 2 == 0) { throw std::invalid_argument("firls: Odd number of taps required."); }
+
+        if (bands.size() % 2 != 0) { throw std::invalid_argument("firls: Bands vector must have even length."); }
+
+        if (desired.size() != bands.size()) { throw std::invalid_argument("firls: Desired vector must have length equal to the number of band edges."); }
+
+        uint numBands = bands.size() / 2;
+        std::vector<double> weights;
+        if (weight.empty()) {
+            weights = std::vector<double>(numBands, 1.0);
+        }
+        else {
+            if (weight.size() != numBands) {
+                throw std::invalid_argument("firls: Weight vector must have length equal to half the number of band edges.");
+            }
+            weights = weight;
+        }
+
+        if (fs <= 0.0) { throw std::invalid_argument("firls: Sampling frequency must be positive."); }
+
+        // Normalize the band edges to [0, 1] (where 1 corresponds to Nyquist = fs / 2).
+        std::vector<double> normBands;
+        for (double b : bands) {
+            double normB = b / (fs / 2.0);
+            if (normB < 0 || normB > 1) { throw std::invalid_argument("firls: Band edges must lie between 0 and 1, relative to Nyquist."); }
+            normBands.push_back(normB);
+        }
+
+        // For a Type I filter, set M = (numtaps - 1) / 2.
+        uint M = (numtaps - 1) / 2;
+
+        // Create a frequency grid. Sample from 0 to pi (radians).
+        std::vector<double> omega = utils::linspace(0.0, M_PI, gridSize);
+
+        // Build a dense frequency grid along with desired response and weights.
+        std::vector<double> gridDesired(gridSize, 0.0);
+        std::vector<double> gridWeights(gridSize, 0.0);
+        for (uint i = 0; i < gridSize; i++) {
+            // For each grid point, map the radian frequency w to Hz.
+            double w = omega[i];
+            double f = (w / M_PI) * (fs / 2.0);
+
+            // Loop over each band (each defined by two consecutive elements in bands/desired).
+            for (uint b = 0; b < numBands; b++) {
+                double fstart = normBands[2 * b];
+                double fstop = normBands[2 * b + 1];
+
+                // Linear interpolation between the band edge desired values.
+                if (f >= fstart && f <= fstop) {
+                    double d1 = desired[2 * b];
+                    double d2 = desired[2 * b + 1];
+                    double t = (f - fstart) / (fstop - fstart);
+
+                    // Frequencies outside any specified band get zero desired response and zero weight.
+                    gridDesired[i] = d1 + t * (d2 - d1);
+                    gridWeights[i] = weights[b];
+                    break;
+                }
+            }
+        }
+
+        // Build the design matrix A.
+        // For a symmetric FIR filter, the frequency response (ignoring linear phase delay) is:
+        // F(w) ≈ a0 + 2 * sum_{k=1}^{M} a[k] cos(k w)
+        // Each row i of A is: [1, 2*cos(w[i]), 2*cos(2w[i]), ..., 2*cos(M w[i])].
+        std::vector<std::vector<double>> A(gridSize, std::vector<double>(M + 1, 0.0));
+        for (uint i = 0; i < gridSize; i++) {
+            double w = omega[i];
+            A[i][0] = 1.0;
+            for (int k = 1; k <= M; k++) { A[i][k] = 2 * cos(w * k); }
+        }
+
+        std::vector<double> b = gridDesired;
+        for (uint i = 0; i < gridSize; i++) {
+            // Apply the weights: multiply each row of A and the corresponding element in b(gridDesired) by sqrt(weight).
+            double sqrtW = (gridWeights[i] > 0.0) ? sqrt(gridWeights[i]) : 0.0;
+            for (uint j = 0; j < A[i].size(); j++) { A[i][j] *= sqrtW; }
+            b[i] *= sqrtW;
+        }
+
+        // Solve the weighted least squares problem A * x = b.
+        std::vector<double> x = utils::lstsq(A, b);
+
+        // Construct the full symmetric FIR filter coefficients.
+        std::vector<double> bFull(numtaps, 0.0);
+        bFull[M] = x[0];
+        for (uint k = 1; k <= M; k++) {
+            bFull[M - k] = x[k];
+            bFull[M + k] = x[k];
+        }
+        return bFull;
+    }
+
     std::vector<std::complex<double>> freqz(
         std::vector<double>& w,
         const std::vector<double>& b,
@@ -178,11 +279,11 @@ namespace dsp {
 
         if (fs <= 0.0) { throw std::invalid_argument("remez: Sampling frequency must be positive."); }
 
-        // Normalize the band edges to [0,1] (where 1 corresponds to Nyquist = fs / 2).
+        // Normalize the band edges to [0, 1] (where 1 corresponds to Nyquist = fs / 2).
         std::vector<double> normBands;
         for (double b : bands) {
             double normB = b / (fs / 2.0);
-            if (normB < 0 || normB > 1) { throw std::invalid_argument("remez: Band edges must lie between 0 and fs/2."); }
+            if (normB < 0 || normB > 1) { throw std::invalid_argument("remez: Band edges must lie between 0 and 1, relative to Nyquist."); }
             normBands.push_back(normB);
         }
 
