@@ -40,6 +40,16 @@ TEST_F(DSPTestFFT, validOutput) {
     }
 }
 
+TEST(DSPTest, convolveValidOutput) {
+    vector<double> h = {1.0, 1.0, 0.0, 0.0};
+    vector<double> x = {1.0, 2.0, 3.0, 4.0, 5.0};
+    vector<double> yExpected = {1.0, 3.0, 5.0, 7.0, 9.0, 5.0, 0.0, 0.0};
+
+    vector<double> y = dsp::convolve(h, x);
+    ASSERT_EQ(y.size(), yExpected.size())  << "Invalid size of the convoluted signal.";
+    for (uint i = 0; i < y.size(); i++) { ASSERT_NEAR(y[i], yExpected[i], 1e-4)  << "Invalid convoluted signal value."; }
+}
+
 TEST(DSPTest, firlsValidOutput) {
     int numtaps = 5;
     vector<double> bands = {0.0, 0.2, 0.4, 0.5};
