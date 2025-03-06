@@ -39,6 +39,37 @@ namespace dsp {
                 return chirpZ(Nfft, xfft);
             }
     };
+    template <typename T>
+    std::vector<T> convolve(
+        const std::vector<double>& h,
+        const std::vector<T>& x
+    ) {
+        // Calculate size of the kernel and the signal.
+        uint nKernel = h.size();
+        uint nSignal = x.size();
+
+        // Output length is the full convolution length.
+        uint nConv = nSignal + nKernel - 1;
+
+        // Initialize empty convolved signal.
+        std::vector<T> y(nConv, static_cast<T>(0));
+
+        // Perform the convolution between the input signal and the kernel.
+        for (uint n = 0; n < nConv; n++) {
+            for (uint k = 0; k < nKernel; k++) {
+                // If k exceeds the current output index, no more contributions.
+                if (k > n)
+                    break;
+
+                // Skip if (n - k) is outside the input signal range.
+                if ((n - k) >= nSignal)
+                    continue;
+
+                y[n] += h[k] * x[n - k];
+            }
+        }
+        return y;
+    };
     std::vector<double> firls(
         uint numtaps,
         const std::vector<double>& bands,
@@ -53,7 +84,24 @@ namespace dsp {
         uint worN = 1024,
         double fs = 1.0
     );
-    std::vector<std::complex<double>> lfilter(const std::vector<double>& b, const std::vector<std::complex<double>>& x);
+    template <typename T>
+    std::vector<T> lfilter(
+        const std::vector<double>& b,
+        const std::vector<T>& x
+    ) {
+        // Calculate size of the filter and the signal.
+        uint nFilter = b.size();
+        uint nSignal = x.size();
+
+        // Initialize empty filtered signal.
+        std::vector<T> y(nSignal, static_cast<T>(0));
+
+        // Filter the input signal with the filter coefficients.
+        for (uint n = 0; n < nSignal; n++) {
+            for (uint k = 0; k < nFilter && k <= n; k++) { y[n] += b[k] * x[n - k]; }
+        }
+        return y;
+    };
     std::vector<double> remez(
         uint numtaps,
         const std::vector<double>& bands,

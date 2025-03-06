@@ -228,21 +228,6 @@ namespace dsp {
         return h;
     }
 
-    vector<complex<double>> lfilter(const vector<double>& b, const vector<complex<double>>& x) {
-        // Calculate size of the filter and of the signal.
-        uint nB = b.size();
-        uint nSignal = x.size();
-
-        // Initialize empty filtered signal.
-        vector<complex<double>> y(nSignal, complex<double>(0.0, 0.0));
-
-        // Filter the input signal with the filter coefficients.
-        for (uint n = 0; n < nSignal; n++) {
-            for (uint k = 0; k < nB && k <= n; k++) { y[n] += b[k] * x[n - k]; }
-        }
-        return y;
-    }
-
     vector<double> remez(
         uint numtaps,
         const vector<double>& bands,

@@ -199,7 +199,7 @@ $$H_{NRZ}(f) = T_s sinc(fT_s)$$
 
 This means:
 - **The first zero occurs at** $f_s$
-- **The main lobe extends from DC to** $\frac{f_s}{2}$
+- **The main lobe extends from DC to** ${f_s}$
 - **Attenuation is lowest, making the signal usable in the first Nyquist zone** $f\in [0,\ \frac{f_s}{2}]$
 
 ### **Bipolar Non-Return-to-Zero (RF) Mode**
@@ -215,11 +215,11 @@ $$
 
 while the frequency response of the **DAC** in **RF** mode can be modeled as:
 
-$$H_{RF}(f) = T_s sinc(\frac{fT_s}{2})\sin(\frac{fT_s}{2})e^{-j(\pi f T_s - \frac{\pi}{2})}$$
+$$H_{RF}(f) = T_s sinc(\frac{fT_s}{2})\sin(\frac{\pi fT_s}{2})e^{-j(\pi f T_s - \frac{\pi}{2})}$$
 
 This means:
 - **The first zero occurs at DC**
-- **The main lobe extends from DC to** $f_s$
+- **The main lobe extends from DC to** $2f_s$
 - **Attenuation is lowest, making the signal usable in the second Nyquist zone** $f\in [\frac{f_s}{2},\ f_s]$
 
 ## Conclusion
