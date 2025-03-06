@@ -9,7 +9,7 @@
 namespace dsp {
     class ComplexFFT {
         private:
-            std::vector<std::complex<double>> chirpZ(unsigned int N, const std::vector<std::complex<double>>& x);
+            std::vector<std::complex<double>> chirpZ(uint N, const std::vector<std::complex<double>>& x);
             std::vector<std::complex<double>> dft(const std::vector<std::complex<double>>& x);
             std::vector<std::complex<double>> radix2(const std::vector<std::complex<double>>& x);
         public:
@@ -17,9 +17,9 @@ namespace dsp {
             ~ComplexFFT() {}
 
             template <typename T>
-            std::vector<std::complex<double>> operator()(const std::vector<T>& x, unsigned int N = 0) {
+            std::vector<std::complex<double>> operator()(const std::vector<T>& x, uint N = 0) {
                 // Adjust the number of points for FFT, accordingly.
-                unsigned int Nfft = N;
+                uint Nfft = N;
                 if (!Nfft) { Nfft = x.size(); }
 
                 // Cast input type to complex.
@@ -39,24 +39,77 @@ namespace dsp {
                 return chirpZ(Nfft, xfft);
             }
     };
+    template <typename T>
+    std::vector<T> convolve(
+        const std::vector<double>& h,
+        const std::vector<T>& x
+    ) {
+        // Calculate size of the kernel and the signal.
+        uint nKernel = h.size();
+        uint nSignal = x.size();
+
+        // Output length is the full convolution length.
+        uint nConv = nSignal + nKernel - 1;
+
+        // Initialize empty convolved signal.
+        std::vector<T> y(nConv, static_cast<T>(0));
+
+        // Perform the convolution between the input signal and the kernel.
+        for (uint n = 0; n < nConv; n++) {
+            for (uint k = 0; k < nKernel; k++) {
+                // If k exceeds the current output index, no more contributions.
+                if (k > n)
+                    break;
+
+                // Skip if (n - k) is outside the input signal range.
+                if ((n - k) >= nSignal)
+                    continue;
+
+                y[n] += h[k] * x[n - k];
+            }
+        }
+        return y;
+    };
+    std::vector<double> firls(
+        uint numtaps,
+        const std::vector<double>& bands,
+        const std::vector<double>& desired,
+        const std::vector<double>& weights = {},
+        double fs = 2.0,
+        uint gridSize = 1024
+    );
     std::vector<std::complex<double>> freqz(
         std::vector<double>& w,
         const std::vector<double>& b,
-        unsigned int worN = 1024,
-        double fs = 1
+        uint worN = 1024,
+        double fs = 1.0
     );
-    std::vector<std::complex<double>> lfilter(
+    template <typename T>
+    std::vector<T> lfilter(
         const std::vector<double>& b,
-        const std::vector<std::complex<double>>& x
-    );
+        const std::vector<T>& x
+    ) {
+        // Calculate size of the filter and the signal.
+        uint nFilter = b.size();
+        uint nSignal = x.size();
+
+        // Initialize empty filtered signal.
+        std::vector<T> y(nSignal, static_cast<T>(0));
+
+        // Filter the input signal with the filter coefficients.
+        for (uint n = 0; n < nSignal; n++) {
+            for (uint k = 0; k < nFilter && k <= n; k++) { y[n] += b[k] * x[n - k]; }
+        }
+        return y;
+    };
     std::vector<double> remez(
-        unsigned int numtaps,
+        uint numtaps,
         const std::vector<double>& bands,
         const std::vector<double>& desired,
-        const std::vector<double>& weight,
+        const std::vector<double>& weights = {},
         double fs = 1.0,
-        unsigned int maxIter = 25,
-        unsigned int gridDensity = 16
+        uint maxIter = 25,
+        uint gridDensity = 16
     );
 }
 

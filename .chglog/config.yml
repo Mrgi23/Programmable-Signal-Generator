@@ -11,11 +11,11 @@ options:
         - fix
         - perf
         - refactor
-        - style
         - test
         - ci
         - docs
         - chore
+        - style
         - revert
   commit_groups:
     group_by: Type
@@ -25,22 +25,22 @@ options:
       - fix
       - perf
       - refactor
-      - style
       - test
       - ci
       - docs
       - chore
+      - style
       - revert
     title_maps:
       feat: Features
       fix: Bug Fixes
       perf: Performance Improvements
       refactor: Code Refactoring
-      style: Formatting
       test: Tests
       ci: CI/CD Pipelines
       docs: Documentation
       chore: Maintenance
+      style: Formatting
       revert: Reverts
   header:
     pattern: "^(\\w*)(?:\\(([\\w\\$\\.\\-\\*\\s]*)\\))?\\:\\s(.*)"
@@ -51,3 +51,4 @@ options:
   notes:
     keywords:
       - BREAKING CHANGE
+      
