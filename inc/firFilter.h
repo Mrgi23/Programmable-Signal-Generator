@@ -9,13 +9,21 @@ class FIR {
     protected:
         int nPoints;
     public:
-        FIR(int nPoints = 8192) : nPoints(nPoints) {}
+        FIR(uint nPoints = 8192) : nPoints(nPoints) {}
         virtual ~FIR() {}
+};
+
+class InverseSinc : public FIR {
+    public:
+        InverseSinc(uint nPoints = 8192) : FIR(nPoints) {}
+        ~InverseSinc() override {}
+
+        std::vector<double> operator()(double Fpass, double errordB, uint nSpec = 16);
 };
 
 class HalfBand : public FIR {
     public:
-        HalfBand(int nPoints = 8192) : FIR(nPoints) {}
+        HalfBand(uint nPoints = 8192) : FIR(nPoints) {}
         ~HalfBand() override {}
 
         std::vector<double> operator()(double AdB, double Fpass);
