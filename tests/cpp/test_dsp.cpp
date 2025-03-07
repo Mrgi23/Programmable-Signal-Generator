@@ -3,12 +3,12 @@
 
 using namespace std;
 
-class DSPTestFFT : public ::testing::Test {
+class TestFFT : public ::testing::Test {
     protected:
         dsp::ComplexFFT fft;
 };
 
-TEST_F(DSPTestFFT, validOutput) {
+TEST_F(TestFFT, validOutput) {
     uint N = 3;
     vector<complex<double>> x = {{1.0, 0.0}, {2.0, 0.0}, {3.0, 0.0}, {4.0, 0.0}};
     vector<complex<double>> XExpected = {{6.0, 0.0}, {-1.5, 0.8660254}, {-1.5, -0.8660254}};
@@ -40,7 +40,7 @@ TEST_F(DSPTestFFT, validOutput) {
     }
 }
 
-TEST(DSPTest, convolveValidOutput) {
+TEST(TestDSP, convolveValidOutput) {
     vector<double> h = {1.0, 1.0, 0.0, 0.0};
     vector<double> x = {1.0, 2.0, 3.0, 4.0, 5.0};
     vector<double> yExpected = {1.0, 3.0, 5.0, 7.0, 9.0, 5.0, 0.0, 0.0};
@@ -50,7 +50,7 @@ TEST(DSPTest, convolveValidOutput) {
     for (uint i = 0; i < y.size(); i++) { ASSERT_NEAR(y[i], yExpected[i], 1e-4)  << "Invalid convoluted signal value."; }
 }
 
-TEST(DSPTest, firlsValidOutput) {
+TEST(TestDSP, firlsValidOutput) {
     int numtaps = 5;
     vector<double> bands = {0.0, 0.2, 0.4, 0.5};
     vector<double> desired = {1.0, 0.75, 0.0, 0.0};
@@ -61,7 +61,7 @@ TEST(DSPTest, firlsValidOutput) {
     for (uint i = 0; i < b.size(); i++) { ASSERT_NEAR(b[i], bExpected[i], 1e-4)  << "Invalid coefficient value."; }
 }
 
-TEST(DSPTest, firlsInvalidInput) {
+TEST(TestDSP, firlsInvalidInput) {
     uint numtaps = 6; // Odd number of taps required.
     EXPECT_THROW(dsp::firls(numtaps, {1}, {1}), invalid_argument);
 
@@ -81,7 +81,7 @@ TEST(DSPTest, firlsInvalidInput) {
     EXPECT_THROW(dsp::firls(5, bands, {1.0, 0.0}, {1.0, 0.0}), invalid_argument);
 }
 
-TEST(DSPTest, freqzValidOutput) {
+TEST(TestDSP, freqzValidOutput) {
     vector<double> w(0, 0.0);
     vector<double> b = {0.1, 0.2, 0.3};
     vector<double> wExpected = {0.0, 0.1, 0.2, 0.3, 0.4};
@@ -99,7 +99,7 @@ TEST(DSPTest, freqzValidOutput) {
     }
 }
 
-TEST(DSPTest, lfilterValidOutput) {
+TEST(TestDSP, lfilterValidOutput) {
     vector<double> b = {0.25, 0.25, 0.25, 0.25};
     vector<complex<double>> x = {
         {1.0, 0.0}, {2.0, 0.0}, {3.0, 0.0}, {4.0, 0.0}, {5.0, 0.0}, {6.0, 0.0}, {7.0, 0.0}, {8.0, 0.0}
@@ -116,7 +116,7 @@ TEST(DSPTest, lfilterValidOutput) {
     }
 }
 
-TEST(DSPTest, remezValidOutput) {
+TEST(TestDSP, remezValidOutput) {
     uint numtaps = 6;
     vector<double> bands = {0.0, 0.4};
     vector<double> desired = {1.0};
@@ -128,7 +128,7 @@ TEST(DSPTest, remezValidOutput) {
     for (uint i = 0; i < b.size(); i++) { ASSERT_NEAR(b[i], bExpected[i], 1e-4)  << "Invalid coefficient value."; }
 }
 
-TEST(DSPTest, remezInvalidInput) {
+TEST(TestDSP, remezInvalidInput) {
     uint numtaps = 7; // Even number of taps required.
     EXPECT_THROW(dsp::remez(numtaps, {1}, {1}), invalid_argument);
 

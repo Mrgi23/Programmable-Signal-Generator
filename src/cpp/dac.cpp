@@ -43,12 +43,12 @@ vector<double> DAC::kernel(std::string mode, uint nNyquist) {
         return K;
     }
     if (mode == "RF") {
-        if (nNyquist % 2) { throw invalid_argument("DAC: Indalid number of Nyquist zones for the RF mode."); }
+        if (nNyquist % 2) { throw invalid_argument("DAC.kernel: Indalid number of Nyquist zones for the RF mode."); }
 
         // Bipolar zero-order hold.
         vector<double> K(nNyquist, 1.0);
         for (uint i = nNyquist / 2; i < nNyquist; i++) { K[i] = -1.0; }
         return K;
     }
-    throw invalid_argument("DAC: Invalid reconstruction mode.");
+    throw invalid_argument("DAC.kernel: Invalid reconstruction mode.");
 }
