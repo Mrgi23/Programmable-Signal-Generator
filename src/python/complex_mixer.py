@@ -28,24 +28,24 @@ class ComplexMixer():
         return I_out
 
     def __CORDIC(self, W_max: int, Z: np.ndarray, I_in: np.ndarray, Q_in: np.ndarray) -> np.ndarray:
-        # Store the real output.
+        # Define the real output.
         I_out = np.zeros(len(I_in))
 
         # Iterate through the complex input signal samples.
         for i, (x, y, z) in enumerate(zip(I_in, Q_in, Z)):
-            # Current complex sample.
+            # Define the current complex vector.
             v = x + 1j * y
 
-            # Iterate through the precomputed rotation factors (i.e. number of iterations).
+            # Perform CORDIC iterations.
             for k, factor in enumerate(self.factors):
                 # Compute the current rotation angle, wrapped around 2*pi.
                 a = W_max * np.angle(factor) / (2 * np.pi)
 
-                # Rotate the vectore forward.
+                # Rotate the vector forward.
                 if z > 0 and z < W_max / 2:
                     v *= factor / np.sqrt(1 + 2 ** (-2 * k))
                     rotation = -1
-                # Rotate the vectore backward.
+                # Rotate the vector backward.
                 else:
                     v *= np.conj(factor) / np.sqrt(1 + 2 ** (-2 * k))
                     rotation = 1

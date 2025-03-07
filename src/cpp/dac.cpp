@@ -1,7 +1,7 @@
 #include <stdexcept>
-#include "dac.h"
-#include "dsp.h"
 #include "utils.h"
+#include "dsp.h"
+#include "dac.h"
 
 using namespace std;
 
@@ -12,7 +12,7 @@ std::vector<double> DAC::operator()(
     double Fpass,
     double errordB
 ) {
-    // Compute reconstruction kernel.
+    // Compute the reconstruction kernel.
     vector<double> K = kernel(mode, nNyquist);
 
     // Filter the input signal with the sinc compensation filter, if necessary.
@@ -23,7 +23,7 @@ std::vector<double> DAC::operator()(
     }
     else { filteredDigital = digital; }
 
-    // Initialize analog signal.
+    // Define the analog signal.
     uint N = (filteredDigital.size() - 1) * nNyquist + 1;
     vector<double> analog(N, 0.0);
 

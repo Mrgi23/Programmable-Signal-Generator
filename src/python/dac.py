@@ -14,7 +14,7 @@ class DAC():
         F_pass: float = 0.4,
         error_dB: float = 0.025
     ) -> np.ndarray:
-        # Compute reconstruction kernel.
+        # Compute the reconstruction kernel.
         K = self.__kernel(mode, n_nyquist)
 
         # Filter the input signal with the sinc compensation filter, if necessary.
@@ -24,7 +24,7 @@ class DAC():
         else:
             filtered_digital = digital
 
-        # Initialize analog signal.
+        # Define the analog signal.
         analog = np.zeros((len(digital) - 1) * n_nyquist + 1)
 
         # Upsample the input signal.

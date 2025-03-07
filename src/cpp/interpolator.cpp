@@ -12,7 +12,7 @@ vector<complex<double>> Interpolator::operator()(
 ) {
     if (fs <= 0.0) { throw invalid_argument("Interpolator.operator(): Sampling frequency must be positive."); }
 
-    // Initialize the output signal.
+    // InDefineitialize the output signal.
     vector<complex<double>> output = input;
 
     // Propagate output signal through the interpolation 4 times.
@@ -20,7 +20,7 @@ vector<complex<double>> Interpolator::operator()(
         // Upsample previous output signal by factor 2.
         output = upsample(2, output);
 
-        // Calculate FIR filter coefficients.
+        // Compute FIR filter coefficients.
         int factor = pow(2, i);
         double Fpass = fmax / (factor * fs);
         vector<double> b = halfband(AdB, Fpass);
@@ -33,8 +33,9 @@ vector<complex<double>> Interpolator::operator()(
 
 vector<complex<double>> Interpolator::filter(const vector<double>& b, const vector<complex<double>>& input) {
     // Prepare signal for filtering by expanding its size for len(b) elements.
-    vector<complex<double>> output(input.size() + b.size(), complex<double>(0.0, 0.0));
-    for (int i = 0; i < input.size() + b.size(); i++) { output[i] = input[i % input.size()]; }
+    uint N = input.size() + b.size();
+    vector<complex<double>> output(N, {0.0, 0.0});
+    for (int i = 0; i < N; i++) { output[i] = input[i % input.size()]; }
 
     // Filter signal.
     output = dsp::lfilter(b, output);
@@ -45,8 +46,8 @@ vector<complex<double>> Interpolator::filter(const vector<double>& b, const vect
 }
 
 vector<complex<double>> Interpolator::upsample(uint n, const vector<complex<double>>& input) {
-    // Initialize empty output with the valid size.
-    vector<complex<double>> output(n * input.size(), complex<double>(0.0, 0.0));
+    // Define the output array.
+    vector<complex<double>> output(n * input.size(), {0.0, 0.0});
 
     // Upsample signal by adding n-1 zeros between every element.
     for (uint i = 0; i < input.size(); i++) { output[i * n] = input[i]; }
