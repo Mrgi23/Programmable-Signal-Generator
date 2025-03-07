@@ -15,7 +15,7 @@ class InverseSinc(FIR):
         if F_pass < 0.0 or F_pass > 0.5:
             raise ValueError("InverseSinc.__call__: Passband must lie between 0.0 and 0.5.")
 
-        # Define spectrum of frequencies.
+        # Compute spectrum of frequencies.
         f = F_pass * np.linspace(0, 1, n_spec + 1)
 
         # Compute target frequencies.
@@ -82,26 +82,27 @@ class HalfBand(FIR):
 
         # Iterate until filter is created.
         while True:
-            # Design the filter.
             try:
-                b = signal.remez(N, [0.0, 2 * F_pass], [1.0], weight=[1.0])
+                # Design the filter.
+                b = signal.remez(N, [0.0, 2 * F_pass], [1.0])
+
+                # Compute the frequency response.
+                f, h = signal.freqz(b, 1, worN=self.n_points, fs=1.0)
+
+                # Calculate error and error frequency response.
+                error = 2 * delta_pass
+                h_error = abs(abs(h) - 1.0)[f < 2 * F_pass]
+
+                # Check if the filter satisfy constrains.
+                if np.all(h_error < error):
+                    # Compute the halfband filter.
+                    coeffs = np.zeros(2 * N - 1)
+                    coeffs[::2] = b
+                    coeffs[N-1] = 1.0
+                    coeffs = 0.5 * coeffs
+                    return coeffs
             except ValueError:
-                b = np.zeros(N)
-
-            # Compute the frequency response.
-            f, h = signal.freqz(b, 1, worN=self.n_points, fs=1)
-
-            # Calculate error and error frequency response.
-            error = 2 * delta_pass
-            h_error = abs(abs(h) - 1.0)[f < 2 * F_pass]
-
-            # Check if the filter satisfy constrains.
-            if np.all(h_error < error):
-                coeffs = np.zeros(2 * N - 1)
-                coeffs[::2] = b
-                coeffs[N-1] = 1.0
-                coeffs = 0.5 * coeffs
-                return coeffs
+                pass
 
             # Increase the filter order.
             N += 2

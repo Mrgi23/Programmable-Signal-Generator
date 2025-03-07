@@ -1,9 +1,9 @@
 #include <cmath>
 #include <complex>
 #include <gtest/gtest.h>
-#include "dac.h"
-#include "dsp.h"
 #include "utils.h"
+#include "dsp.h"
+#include "dac.h"
 
 using namespace std;
 
@@ -29,13 +29,13 @@ TEST_F(TestDAC, validOutput) {
     for (uint i = 0; i < fftAnalog.size() / 2; i++) {
         max = abs(fftAnalog[i]) > max ? abs(fftAnalog[i]) : max;
         if (i == static_cast<uint>(fs-f) || i == static_cast<uint>(fs+f) || i == static_cast<uint>(2*fs-f)) {
-            ASSERT_GT(abs(fftAnalog[i]), 0.01 * abs(fftAnalog[static_cast<uint>(f)])) << "Invalid analog signal value.";
+            ASSERT_GT(abs(fftAnalog[i]), 0.01 * abs(fftAnalog[static_cast<uint>(f)])) << "Spectral replicas must be above 1% of maximum value.";
         }
         else if (i != static_cast<uint>(f)) {
-            ASSERT_LT(abs(fftAnalog[i]), 0.006 * abs(fftAnalog[static_cast<uint>(f)])) << "Invalid analog signal value.";
+            ASSERT_LT(abs(fftAnalog[i]), 0.006 * abs(fftAnalog[static_cast<uint>(f)])) << "Noise must be below 0.6% of maximum value.";
         }
     }
-    ASSERT_EQ(abs(fftAnalog[static_cast<uint>(f)]), max) << "Invalid analog signal value.";
+    ASSERT_EQ(abs(fftAnalog[static_cast<uint>(f)]), max) << "Maximum value must be at the frqeuncy f.";
 
     analog = converter(digital, "RF", nNyquist, Fpass, errordB);
     ASSERT_EQ(analog.size(), nNyquist * digital.size()) << "Invalid size of the analog signal.";
@@ -44,13 +44,13 @@ TEST_F(TestDAC, validOutput) {
     for (uint i = 0; i < fftAnalog.size() / 2; i++) {
         max = abs(fftAnalog[i]) > max ? abs(fftAnalog[i]) : max;
         if (i == static_cast<uint>(f) || i == static_cast<uint>(fs+f) || i == static_cast<uint>(2*fs-f)) {
-            ASSERT_GT(abs(fftAnalog[i]), 0.001 * abs(fftAnalog[static_cast<uint>(fs-f)])) << "Invalid analog signal value.";
+            ASSERT_GT(abs(fftAnalog[i]), 0.001 * abs(fftAnalog[static_cast<uint>(fs-f)])) << "Spectral replicas must be above 0.1% of maximum value.";
         }
         else if (i != static_cast<uint>(fs-f)) {
-            ASSERT_NEAR(abs(fftAnalog[i]), 0, 1e-5) << "Invalid analog signal value.";
+            ASSERT_NEAR(abs(fftAnalog[i]), 0, 1e-5) << "Noise must be close to 0.";
         }
     }
-    ASSERT_EQ(abs(fftAnalog[static_cast<uint>(fs-f)]), max) << "Invalid analog signal value.";
+    ASSERT_EQ(abs(fftAnalog[static_cast<uint>(fs-f)]), max) << "Maximum value must be at the frqeuncy fs-f.";
 }
 
 TEST_F(TestDAC, invalidInput) {

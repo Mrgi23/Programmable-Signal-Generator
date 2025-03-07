@@ -3,12 +3,12 @@
 
 #ifdef __cplusplus
 
-#include <vector>
 #include <complex>
+#include <vector>
 
 class ComplexMixer {
     private:
-        int nIter;
+        uint nIter;
         double fres;
         std::vector<std::complex<double>> factors;
 
@@ -20,7 +20,7 @@ class ComplexMixer {
         );
         std::vector<uint> NCO(uint W, uint Wmax, uint nPoints);
     public:
-        ComplexMixer(int nIter = 13, double fres = 1.0);
+        ComplexMixer(uint nIter = 13, double fres = 1.0);
         ~ComplexMixer() {}
 
         std::vector<double> operator()(
