@@ -1,7 +1,7 @@
 #include <stdexcept>
-#include "dac.h"
-#include "dsp.h"
 #include "utils.h"
+#include "dsp.h"
+#include "dac.h"
 
 using namespace std;
 
@@ -12,7 +12,7 @@ std::vector<double> DAC::operator()(
     double Fpass,
     double errordB
 ) {
-    // Compute reconstruction kernel.
+    // Compute the reconstruction kernel.
     vector<double> K = kernel(mode, nNyquist);
 
     // Filter the input signal with the sinc compensation filter, if necessary.
@@ -23,7 +23,7 @@ std::vector<double> DAC::operator()(
     }
     else { filteredDigital = digital; }
 
-    // Initialize analog signal.
+    // Define the analog signal.
     uint N = (filteredDigital.size() - 1) * nNyquist + 1;
     vector<double> analog(N, 0.0);
 
@@ -43,12 +43,12 @@ vector<double> DAC::kernel(std::string mode, uint nNyquist) {
         return K;
     }
     if (mode == "RF") {
-        if (nNyquist % 2) { throw invalid_argument("DAC: Indalid number of Nyquist zones for the RF mode."); }
+        if (nNyquist % 2) { throw invalid_argument("DAC.kernel: Indalid number of Nyquist zones for the RF mode."); }
 
         // Bipolar zero-order hold.
         vector<double> K(nNyquist, 1.0);
         for (uint i = nNyquist / 2; i < nNyquist; i++) { K[i] = -1.0; }
         return K;
     }
-    throw invalid_argument("DAC: Invalid reconstruction mode.");
+    throw invalid_argument("DAC.kernel: Invalid reconstruction mode.");
 }

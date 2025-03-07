@@ -8,30 +8,29 @@ using namespace std;
 
 namespace dsp {
     vector<complex<double>> ComplexFFT::chirpZ(uint N, const vector<complex<double>>& x) {
-        // Compute convolution in next power of 2 elements atleast 2 * N - 1.
+        // Calculate convolution in next power of 2 elements atleast 2 * N - 1.
         uint Nfft = 1u << static_cast<uint>(ceil(log2(2 * N - 1)));
 
         // Define modified signal and convolution kernel.
-        vector<complex<double>> xTilde(Nfft, complex<double>(0.0, 0.0));
-        vector<complex<double>> k(Nfft, complex<double>(0.0, 0.0));
+        vector<complex<double>> xTilde(Nfft, {0.0, 0.0});
+        vector<complex<double>> k(Nfft, {0.0, 0.0});
 
         // Compute current kernel sample and modified x sample.
         // xTilde[n] = x[n] * exp(-j x pi x n ^ 2 / N).
         // kernel[n] = exp(j x pi x n ^ 2 / N), kernel[-n] = kernel[n].
-        complex<double> j(0.0, 1.0);
         for (int n = 0; n < N; n++) {
             double t = static_cast<double>(n * n) / static_cast<double>(N);
-            k[n] = exp(j * M_PI * t);
+            k[n] = exp(complexJ * M_PI * t);
             if (n > 0) { k[Nfft - n] = k[n]; }
-            xTilde[n] = x[n] * exp(-1.0 * j * M_PI * t);
+            xTilde[n] = x[n] * exp(-1.0 * complexJ * M_PI * t);
         }
 
-        // Compute FFTs of both zero-padded sequences using the radix2 FFT.
+        // Perform FFTs of both zero-padded sequences using the radix2 FFT.
         vector<complex<double>> Xtilde = radix2(xTilde);
         vector<complex<double>> K = radix2(k);
 
         // Perform convolution in frequency domain.
-        vector<complex<double>> Y(Nfft, complex<double>(0.0, 0.0));
+        vector<complex<double>> Y(Nfft, {0.0, 0.0});
         for (uint n = 0; n < Nfft; n++) { Y[n] = Xtilde[n] * K[n]; }
 
         // Perform inverse FFT (y = conj(fft(conj(Y)))) / Nfft.
@@ -40,29 +39,28 @@ namespace dsp {
         vector<complex<double>> y = radix2(Yconj);
         for (uint n = 0; n < Nfft; n++) { y[n] = conj(y[n]) / static_cast<double>(Nfft); }
 
-        // Compute chirpZ FFT of the input signal.
+        // Perform chirpZ FFT of the input signal.
         // X[n] = exp(-j x pi x n ^ 2 / N) xTilde[n] * k[n].
-        vector<complex<double>> X(N, complex<double>(0.0, 0.0));
+        vector<complex<double>> X(N, {0.0, 0.0});
         for (uint n = 0; n < N; n++) {
             double t = static_cast<double>(n * n) / static_cast<double>(N);
-            X[n] = y[n] * exp(-j * M_PI * t);
+            X[n] = y[n] * exp(-complexJ * M_PI * t);
         }
         return X;
     }
 
     vector<complex<double>> ComplexFFT::dft(const vector<complex<double>>& x) {
-        // Store DFT output.
+        // Define the FT output.
         int N = x.size();
-        vector<complex<double>> X(N, complex<double>(0.0, 0.0));
+        vector<complex<double>> X(N, {0.0, 0.0});
 
         // Perform DFT.
         // X[k] = x[n] * exp(-2 * j * pi * k * n / N).
-        complex<double> j(0.0, 1.0);
         for (int k = 0; k < N; k++) {
             for (int n = 0; n < N; n++) {
                 // Calculate twiddle factor.
                 double t = static_cast<double>(k * n) / static_cast<double>(N);
-                complex<double> W = exp(-2.0 * j * M_PI * t);
+                complex<double> W = exp(-2.0 * complexJ * M_PI * t);
 
                 // Calculate current DFT sample.
                 X[k] += x[n] * W;
@@ -76,9 +74,9 @@ namespace dsp {
         int N = x.size();
         if (N == 1) { return x; }
 
-        // Extract even and odd elements.
-        vector<complex<double>> Xeven(N / 2, complex<double>(0.0, 0.0));
-        vector<complex<double>> Xodd(N / 2, complex<double>(0.0, 0.0));
+        // Compute even and odd elements.
+        vector<complex<double>> Xeven(N / 2, {0.0, 0.0});
+        vector<complex<double>> Xodd(N / 2, {0.0, 0.0});
         for (int n = 0; n < N / 2; n++) {
             Xeven[n] = x[2 * n];
             Xodd[n] = x[2 * n + 1];
@@ -88,17 +86,16 @@ namespace dsp {
         Xeven = radix2(Xeven);
         Xodd = radix2(Xodd);
 
-        // Store radix2 output.
+        // Define the FT output.
         vector<complex<double>> X(N, complex<double>(0.0, 0.0));
 
-        // Combine even and odd elements using radix2 algorithm.
+        // Perform radix2 algorithm.
         // X[k] = Xeven[x] + Xodd[k] * exp(-2 * j * M_PI * k / N).
         // X[k + N / 2] = Xeven[x] - Xodd[k] * exp(-2 * j * M_PI * k / N).
-        complex<double> j(0.0, 1.0);
         for (int k = 0; k < N / 2; k++) {
             // Calculate twiddle factor.
             double t = static_cast<double>(k) / static_cast<double>(N);
-            complex<double> W = exp(-2.0 * j * M_PI * t);
+            complex<double> W = exp(-2.0 * complexJ * M_PI * t);
 
             // Calculate current radix2 sample.
             X[k] = Xeven[k] + W * Xodd[k];
@@ -146,10 +143,10 @@ namespace dsp {
         // For a Type I filter, set M = (numtaps - 1) / 2.
         uint M = (numtaps - 1) / 2;
 
-        // Create a frequency grid. Sample from 0 to pi (radians).
+        // Define a frequency grid. Sample from 0 to pi (radians).
         vector<double> omega = utils::linspace(0.0, M_PI, gridSize);
 
-        // Build a dense frequency grid along with desired response and weights.
+        // Compute a dense frequency grid along with desired response and weights.
         vector<double> gridDesired(gridSize, 0.0);
         vector<double> gridWeights(gridSize, 0.0);
         for (uint i = 0; i < gridSize; i++) {
@@ -176,7 +173,7 @@ namespace dsp {
             }
         }
 
-        // Build the design matrix A.
+        // Compute the design matrix A.
         // For a symmetric FIR filter, the frequency response (ignoring linear phase delay) is:
         // F(w) ≈ a0 + 2 * sum_{k=1}^{M} a[k] cos(k w)
         // Each row i of A is: [1, 2*cos(w[i]), 2*cos(2w[i]), ..., 2*cos(M w[i])].
@@ -198,7 +195,7 @@ namespace dsp {
         // Solve the weighted least squares problem A * x = b.
         vector<double> x = utils::lstsq(A, b);
 
-        // Construct the full symmetric FIR filter coefficients.
+        // Compute the full symmetric FIR filter coefficients.
         vector<double> bFull(numtaps, 0.0);
         bFull[M] = x[0];
         for (uint k = 1; k <= M; k++) {
@@ -209,10 +206,10 @@ namespace dsp {
     }
 
     vector<complex<double>> freqz(vector<double>& w, const vector<double>& b, uint worN, double fs) {
-        // Store frequency values.
+        // Define the frequency values.
         if (w.size() != worN) { w.resize(worN); }
 
-        // Store frequency response.
+        // Define frequency response.
         vector<complex<double>> h(worN);
 
         // Iterate through the frequency points.
@@ -266,7 +263,7 @@ namespace dsp {
             normBands.push_back(normB);
         }
 
-        // Build a dense frequency grid along with desired response and weights.
+        // Compute a dense frequency grid along with desired response and weights.
         vector<double> grid, gridDesired, gridWeight;
         for (uint i = 0; i < normBands.size() / 2; i++) {
             // Define start and stop frequency.
@@ -287,13 +284,13 @@ namespace dsp {
         // For a Type I filter, set M = (numtaps - 1) / 2.
         uint M = numtaps / 2;
 
-        // The number of unknown variables
+        // Calculate the number of unknown variables
         uint nUnknowns = M + 1;
 
-        // Number of extremums (at least as number of unknown libraries).
+        // Calculate the number of extremums (at least as number of unknown libraries).
         uint nExt = nUnknowns;
 
-        // Initialize extremal frequencies by selecting nExt equally spaced points from the grid.
+        // Define extremal frequencies by selecting nExt equally spaced points from the grid.
         vector<double> ext;
         {
             // Compute step in index-space.
@@ -304,16 +301,16 @@ namespace dsp {
             }
         }
 
-        // Allocate vector for prototype coefficients.
+        // Define vector for prototype coefficients.
         vector<double> bProto(M, 0.0);
 
         // Remez exchange iterations.
         for (uint iter = 0; iter < maxIter; iter++) {
-            // Initialize the interpolation matrix A and right-hand side vector b.
+            // Define the interpolation matrix A and right-hand side vector b.
             vector<vector<double>> A(nExt, vector<double>(nUnknowns, 0.0));
             vector<double> b(nExt, 0.0);
 
-            // Calculate the interpolation matrix A and right-hand side vector b.
+            // Compute the interpolation matrix A and right-hand side vector b.
             for (uint i = 0; i < nExt; i++) {
                 // Fill in cosine basis functions (scaled by 2) for each prototype coefficient.
                 double f = ext[i];
@@ -392,7 +389,7 @@ namespace dsp {
             if (converged) { break; }
         }
 
-        // Construct the full symmetric FIR filter coefficients.
+        // Compute the full symmetric FIR filter coefficients.
         vector<double> bFull(numtaps, 0.0);
         for (uint i = 0; i < M; i++) { bFull[i] = bProto[M - 1 - i]; }
         for (uint i = 0; i < M; i++) { bFull[M + i] = bProto[i]; }

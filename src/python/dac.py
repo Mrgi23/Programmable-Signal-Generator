@@ -14,7 +14,7 @@ class DAC():
         F_pass: float = 0.4,
         error_dB: float = 0.025
     ) -> np.ndarray:
-        # Compute reconstruction kernel.
+        # Compute the reconstruction kernel.
         K = self.__kernel(mode, n_nyquist)
 
         # Filter the input signal with the sinc compensation filter, if necessary.
@@ -24,7 +24,7 @@ class DAC():
         else:
             filtered_digital = digital
 
-        # Initialize analog signal.
+        # Define the analog signal.
         analog = np.zeros((len(digital) - 1) * n_nyquist + 1)
 
         # Upsample the input signal.
@@ -42,10 +42,10 @@ class DAC():
             return K
         if mode == "RF":
             if n_nyquist % 2:
-                raise ValueError("DAC: Indalid number of Nyquist zones for the RF mode.")
+                raise ValueError("DAC.__kernel: Indalid number of Nyquist zones for the RF mode.")
 
             # Bipolar zero-order hold.
             K = np.ones(n_nyquist)
             K[n_nyquist//2:] = -1
             return K
-        raise ValueError("DAC: Invalid reconstruction mode.")
+        raise ValueError("DAC.__kernel: Invalid reconstruction mode.")

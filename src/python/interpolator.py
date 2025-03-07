@@ -10,7 +10,7 @@ class Interpolator():
         if fs <= 0:
             raise ValueError("Interpolator.__call__: Sampling frequency must be positive.")
 
-        # Initialize the output signal.
+        # Dedfine the output signal.
         output = input
 
         # Propagate output signal through the interpolation 4 times.
@@ -18,7 +18,7 @@ class Interpolator():
             # Upsample previous output signal by factor 2.
             output = self.__upsample(2, output)
 
-            # Calculate FIR filter coefficients.
+            # Compute FIR filter coefficients.
             factor = (2 ** i)
             F_pass = f_max / (factor * fs)
             b = self.halfband(A_dB, F_pass)
@@ -39,7 +39,7 @@ class Interpolator():
         return output
 
     def __upsample(self, n: int, input: np.ndarray) -> np.ndarray:
-        # Initialize empty output with the valid size.
+        # Define empty output with the valid size.
         output = np.zeros(len(input) * n, dtype=complex)
 
         # Upsample signal by adding n-1 zeros between every element.

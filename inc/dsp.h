@@ -4,7 +4,16 @@
 #ifdef __cplusplus
 
 #include <complex>
+#include <type_traits>
 #include <vector>
+
+constexpr std::complex<double> complexJ = {0.0, 1.0};
+
+template<typename T>
+struct is_complex : std::false_type {};
+
+template<typename T>
+struct is_complex<std::complex<T>> : std::true_type {};
 
 namespace dsp {
     class ComplexFFT {
@@ -27,7 +36,7 @@ namespace dsp {
                 for (T sample : x) { xfft.push_back(static_cast<std::complex<double>>(sample)); }
 
                 // Zero-padding, if necessary.
-                if (xfft.size() < Nfft) { xfft.resize(Nfft, std::complex<double>(0.0, 0.0)); }
+                if (xfft.size() < Nfft) { xfft.resize(Nfft, {0.0, 0.0}); }
 
                 // If number of FFT points is equal to the number of 2, compute FFT using radix2.
                 if (!(Nfft & (Nfft - 1))) { return radix2(xfft); }
@@ -40,19 +49,31 @@ namespace dsp {
             }
     };
     template <typename T>
-    std::vector<T> convolve(
+    auto convolve(
         const std::vector<double>& h,
         const std::vector<T>& x
-    ) {
+    ) -> typename std::conditional<
+            is_complex<T>::value,
+            std::vector<std::complex<double>>,
+            std::vector<double>
+        >::type
+    {
+        // Define the result type.
+        using resultT = typename std::conditional<
+            is_complex<T>::value,
+            std::complex<double>,
+            double
+        >::type;
+
         // Calculate size of the kernel and the signal.
         uint nKernel = h.size();
         uint nSignal = x.size();
 
-        // Output length is the full convolution length.
+        // Calculate size of the convolution output.
         uint nConv = nSignal + nKernel - 1;
 
-        // Initialize empty convolved signal.
-        std::vector<T> y(nConv, static_cast<T>(0));
+        // Define empty convolved signal.
+        std::vector<resultT> y(nConv, static_cast<resultT>(0));
 
         // Perform the convolution between the input signal and the kernel.
         for (uint n = 0; n < nConv; n++) {
@@ -85,16 +106,28 @@ namespace dsp {
         double fs = 1.0
     );
     template <typename T>
-    std::vector<T> lfilter(
+    auto lfilter(
         const std::vector<double>& b,
         const std::vector<T>& x
-    ) {
+    ) -> typename std::conditional<
+            is_complex<T>::value,
+            std::vector<std::complex<double>>,
+            std::vector<double>
+        >::type
+    {
+        // Define the result type.
+        using resultT = typename std::conditional<
+            is_complex<T>::value,
+            std::complex<double>,
+            double
+        >::type;
+
         // Calculate size of the filter and the signal.
         uint nFilter = b.size();
         uint nSignal = x.size();
 
-        // Initialize empty filtered signal.
-        std::vector<T> y(nSignal, static_cast<T>(0));
+        // Define empty filtered signal.
+        std::vector<resultT> y(nSignal, static_cast<resultT>(0));
 
         // Filter the input signal with the filter coefficients.
         for (uint n = 0; n < nSignal; n++) {
