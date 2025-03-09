@@ -6,17 +6,30 @@ from interpolator import Interpolator
 def interpolator():
     return Interpolator()
 
-def test_interpolator_valid_output(interpolator):
-    f_max = 200
-    fs = 1000
-    t = np.linspace(0, 1, fs, endpoint=False)
+def test_interpolator_valid_output(mocker, interpolator):
+    # Define the input.
+    f_max = 400.00
+    fs = 1000.00
+    t = np.linspace(0, 1, int(fs), endpoint=False)
     input = np.sin(2 * np.pi * f_max * t)
 
-    output = interpolator(60.0, f_max, fs, input)
+    # Mock the HalfBand filter.
+    halfband_result = [np.array([1])] * 4
+    halfband_mock = mocker.Mock(side_effect=halfband_result)
+    interpolator.halfband = halfband_mock
+
+    # Compute the result.
+    output = interpolator(120.0, f_max, fs, input)
+    output = np.abs(np.fft.fft(output))
+
+    # Test the result.
+    spec = []
+    for i in range(16):
+        spec.append(int(i * fs + f_max))
+        spec.append(int((i + 1) * fs - f_max))
     assert(output.size == 16 * input.size), "Invalid size of the interpolated signal."
-    output = np.abs(np.fft.fft(output))[:len(output)//2]
-    assert(np.isclose(output[f_max], fs // 2, atol=1e-5)), "Spectral component must be at fmax."
-    assert(np.allclose(output[output != output[f_max]], 0, atol=1e-5)), "Noise must be close to 0."
+    assert(np.allclose(output[spec], fs / 2, atol=1e-9)), "Spectral component must be at fmax."
+    assert(np.allclose(np.delete(output, spec), 0, atol=1e-9)), "Noise must be close to 0."
 
 def test_interpolator__invalid_input(interpolator):
     with pytest.raises(ValueError, match="Interpolator.__call__: Sampling frequency must be positive."):

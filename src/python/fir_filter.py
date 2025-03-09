@@ -12,7 +12,7 @@ class InverseSinc(FIR):
         super().__init__(n_points)
 
     def __call__(self, F_pass: float, error_dB: float, n_spec: int = 16):
-        if F_pass < 0.0 or F_pass > 0.5:
+        if F_pass <= 0.0 or F_pass >= 0.5:
             raise ValueError("InverseSinc.__call__: Passband must lie between 0.0 and 0.5.")
 
         # Compute spectrum of frequencies.
@@ -67,14 +67,14 @@ class HalfBand(FIR):
         super().__init__(n_points)
 
     def __call__(self, A_dB: float, F_pass: float) -> np.ndarray:
-        if F_pass < 0.0 or F_pass > 0.25:
+        if F_pass <= 0.0 or F_pass >= 0.25:
             raise ValueError("HalfBand.__call__: Passband must lie between 0.0 and 0.25.")
 
         # Passband ripple.
         delta_pass = 10 ** (-abs(A_dB) / 20)
 
         # Harris formula for initial filter order.
-        N = int(2 * abs(A_dB) / (23 * (0.5 - 2 * F_pass)))
+        N = int(abs(A_dB) / (46 * (0.5 - 2 * F_pass)))
 
         # Type II filter, even number of taps.
         if N % 2:

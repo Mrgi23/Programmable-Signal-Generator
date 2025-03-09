@@ -3,8 +3,8 @@ import scipy.signal as signal
 from fir_filter import InverseSinc
 
 class DAC():
-    def __init__(self) -> None:
-        self.inverse_sinc = InverseSinc()
+    def __init__(self, n_points: int = 8192) -> None:
+        self.inverse_sinc = InverseSinc(n_points)
 
     def __call__(
         self,

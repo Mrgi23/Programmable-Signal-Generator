@@ -20,7 +20,7 @@ class ComplexMixer():
         W_max = 2 ** L
 
         # Compute phase increment and accumulated phases for the desired shift frequency.
-        W = int(f_shift * W_max / fs) % W_max
+        W = np.fmod(f_shift * W_max / fs, W_max)
         Z = self.__NCO(W, W_max, len(I_in))
 
         # Rotate the vector.
@@ -57,10 +57,10 @@ class ComplexMixer():
             I_out[i] = v.real
         return I_out
 
-    def __NCO(self, W: int, W_max: int, n_points: int) -> np.ndarray:
+    def __NCO(self, W: float, W_max: int, n_points: int) -> np.ndarray:
         # Compute accumulated phases.
         Z = W * np.arange(n_points + 1)
 
         # Wrap phases around 2*pi.
-        Z = Z % W_max
+        Z = np.fmod(Z, W_max)
         return Z

@@ -8,7 +8,7 @@
 using namespace std;
 
 vector<double> InverseSinc::operator()(double Fpass, double errordB, uint nSpec) {
-    if (Fpass < 0.0 || Fpass > 0.5) { throw invalid_argument("InverseSinc.operator(): Passband must lie between 0.0 and 0.5."); }
+    if (Fpass <= 0.0 || Fpass >= 0.5) { throw invalid_argument("InverseSinc.operator(): Passband must lie between 0.0 and 0.5."); }
 
     // Compute spectrum of frequencies.
     vector<double> f = utils::linspace(0.0, Fpass, nSpec + 1);
@@ -65,13 +65,13 @@ vector<double> InverseSinc::operator()(double Fpass, double errordB, uint nSpec)
 }
 
 vector<double> HalfBand::operator()(double AdB, double Fpass) {
-    if (Fpass < 0.0 || Fpass > 0.25) { throw invalid_argument("HalfBand.operator(): Passband must lie between 0.0 and 0.25."); }
+    if (Fpass <= 0.0 || Fpass >= 0.25) { throw invalid_argument("HalfBand.operator(): Passband must lie between 0.0 and 0.25."); }
 
     // Passband ripple.
     double deltaPass = pow(10.0, -abs(AdB) / 20.0);
 
     // Harris formula for initial filter order.
-    uint N = static_cast<uint>(2 * abs(AdB) / (23 * (0.5 - 2 * Fpass)));
+    uint N = static_cast<uint>(abs(AdB) / (46 * (0.5 - 2 * Fpass)));
 
     // Type II filter, even number of taps.
     if (N % 2) { N += 1; }

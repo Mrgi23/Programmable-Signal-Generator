@@ -1,9 +1,24 @@
+#include <algorithm>
 #include <cmath>
+#include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "dsp.h"
+
+#define private public
+#include "firFilter.h"
 #include "interpolator.h"
+#undef private
 
 using namespace std;
+using ::testing::_;
+using ::testing::Return;
+
+class HalfBandMock : public HalfBand {
+    public:
+        HalfBandMock(int nPoints = 8192) : HalfBand(nPoints) {}
+        MOCK_METHOD(vector<double>, Call, (double AdB, double Fpass), ());
+        vector<double> operator()(double AdB, double Fpass) override { return Call(AdB, Fpass); }
+};
 
 class TestInterpolator : public ::testing::Test {
     protected:
@@ -12,21 +27,38 @@ class TestInterpolator : public ::testing::Test {
 };
 
 TEST_F(TestInterpolator, validOutput) {
-    double fmax = 200.0;
+    // Define the output.
+    double fmax = 400.0;
     double fs = 1000.0;
     vector<complex<double>> input(static_cast<int>(fs), complex<double>(0.0, 0.0));
     for (uint n = 0; n < static_cast<int>(fs); n++) {
         input[n] = complex<double>(sin(2 * M_PI * fmax * static_cast<double>(n) / fs));
     }
+
+    // Mock the HalfBand filter.
+    vector<double> halfbandResult = {1.0};
+    delete interpolator.halfband;
+    interpolator.halfband = new HalfBandMock();
+    HalfBandMock * halfbandMock = dynamic_cast<HalfBandMock*>(interpolator.halfband);
+    EXPECT_CALL(*halfbandMock, Call(_, _)).Times(4).WillRepeatedly(Return(halfbandResult));
+
+    // Compute the result.
+    vector<complex<double>> output = interpolator(120.0, fmax, fs, input);
+    output = fft(output);
     uint N = static_cast<uint>(16 * fs);
 
-    vector<complex<double>> output = interpolator(60.0, fmax, fs, input);
-    output = fft(output, N);
+    // Test the result.
+    vector<uint> spec;
+    for (uint i  = 0; i < 16; i++) {
+        spec.push_back(static_cast<uint>(i * fs + fmax));
+        spec.push_back(static_cast<uint>((i + 1) * fs - fmax));
+    }
     ASSERT_EQ(output.size(), N) << "Invalid size of the interpolated signal.";
-    for (uint i = 0; i < N / 2; i++) {
-        double sampleExpected = 0.0;
-        if (i == static_cast<int>(fmax)) { sampleExpected = fs / 2; }
-        ASSERT_NEAR(abs(output[i]), sampleExpected, 1e-5) << "Spectral component must be at fmax and noise close to 0.";
+    for (uint i = 0; i < N; i++) {
+        if (find(spec.begin(), spec.end(), i) != spec.end()) {
+            ASSERT_NEAR(abs(output[i]), fs / 2, 1e-9) << "Spectral component must be at fmax.";
+        }
+        else { ASSERT_NEAR(abs(output[i]), 0, 1e-9) << "Noise must be close to 0."; }
     }
 }
 
