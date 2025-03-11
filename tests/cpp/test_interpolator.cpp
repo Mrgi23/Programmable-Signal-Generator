@@ -45,11 +45,11 @@ TEST_F(TestInterpolator, validOutput) {
     // Compute the result.
     vector<complex<double>> output = interpolator(120.0, fmax, fs, input);
     output = fft(output);
-    uint N = static_cast<uint>(16 * fs);
+    uint N = static_cast<uint>(pow(2U, interpolator.getN()) * fs);
 
     // Test the result.
     vector<uint> spec;
-    for (uint i  = 0; i < 16; i++) {
+    for (uint i  = 0; i < pow(2U, interpolator.getN()); i++) {
         spec.push_back(static_cast<uint>(i * fs + fmax));
         spec.push_back(static_cast<uint>((i + 1) * fs - fmax));
     }

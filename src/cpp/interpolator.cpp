@@ -16,7 +16,7 @@ vector<complex<double>> Interpolator::operator()(
     vector<complex<double>> output = input;
 
     // Propagate output signal through the interpolation 4 times.
-    for (int i = 1; i < 5; i++) {
+    for (int i = 1; i < N + 1  ; i++) {
         // Upsample previous output signal by factor 2.
         output = upsample(2, output);
 
@@ -24,7 +24,7 @@ vector<complex<double>> Interpolator::operator()(
         int factor = pow(2, i);
         double Fpass = fmax / (factor * fs);
         vector<double> b = (*halfband)(AdB, Fpass);
-        
+
         // Filter the upsampled signal.
         output = filter(b, output);
     }
