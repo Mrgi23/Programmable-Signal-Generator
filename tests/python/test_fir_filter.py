@@ -71,7 +71,7 @@ def test_halfband_order_increase(halfband_filter):
 
 def test_halfband_too_high_order(halfband_filter):
     with pytest.raises(ValueError, match="HalfBand.__call__: Too high order of the filter."):
-        halfband_filter(240.0, 0.24)
+        halfband_filter(270.0, 0.24)
 
 def test_halfband_invalid_input(halfband_filter):
     with pytest.raises(ValueError, match="Passband must lie between 0.0 and 0.25."):

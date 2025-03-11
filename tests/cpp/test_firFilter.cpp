@@ -80,7 +80,7 @@ TEST_F(TestFIR, halfBandOrderIncrease) {
 
 TEST_F(TestFIR, halfBandTooHighOrder) {
     // Too high order of the filter.
-    EXPECT_THROW(halfband(240.0, 0.24), length_error);
+    EXPECT_THROW(halfband(270.0, 0.24), length_error);
 }
 
 TEST_F(TestFIR, halfBandInvalidInput) {

@@ -19,7 +19,7 @@ def test_dac_valid_output(mocker, converter):
     # Mock the InverseSinc filter.
     inverse_sinc_result = [np.array([1])]
     inverse_sinc_mock = mocker.Mock(side_effect=inverse_sinc_result)
-    converter.inverse_sinc = inverse_sinc_mock
+    converter._DAC__inverse_sinc = inverse_sinc_mock
 
     # Compute the result.
     analog = converter(digital, "NRZ", n_nyquist, F_pass, error_dB)
