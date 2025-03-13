@@ -5,12 +5,12 @@ Testing strategies ensure the accuracy, reliability, and performance of the Prog
 
 ## Testing Frameworks
 ### C++ Testing
-- **Google Test (gtest)** – Unit testing framework for C++
+- **Google Test (gtest), Google Mock (gmock)** – Testing framework for C++
 - **LLVM `llvm-cov`** – Code coverage analysis
 - **Valgrind** (optional) – Memory leak detection (Linux/macOS only)
 
 ### Python Testing
-- **pytest** – Unit testing framework for Python
+- **pytest** – Testing framework for Python
 - **pytest-cov** – Code coverage analysis
 - **mypy** – Static type checking for Python
 
@@ -22,7 +22,6 @@ Ensure that all required dependencies are installed.
 
 ### C++ Dependencies
 - **CMake** – Build system for compiling tests
-- **Google Test (gtest)** – Unit testing framework for C++
 - **LLVM (`llvm-cov`)** – Required for C++ code coverage (**Only works with Clang**)
 - **Make or Ninja** – For compiling tests
 
@@ -39,11 +38,19 @@ Ensure that all required dependencies are installed.
 #### 1. Linux/WSL
 ```sh
 sudo apt update && sudo apt install -y git cmake clang lld make python3.10 python3.10-venv llvm lcov
+
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
 ```
 
 #### 2. macOS
 ```sh
 brew install git cmake clang llvm make python@3.10 lcov
+
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
 ```
 
 ## Unit Testing
@@ -60,19 +67,20 @@ Unit testing ensures that individual components of the system function correctly
 mkdir -p tests/build && cd tests/build
 cmake ..
 make
-./runAllTests.exe
+./unitTests
 ```
 
 #### Python Tests
 ```sh
-PYTHONPATH=./src/python pytest tests/python
+source .venv/bin/activate
+PYTHONPATH=./src/python pytest tests/python/unit
 ```
 
 ### Test File Location
 | **Language**       | **Directory**    |
 |--------------------|------------------|
-| C++ Unit Tests     | `tests/cpp`      |
-| Python Unit Tests  | `tests/python`   |
+| C++ Unit Tests     | `tests/cpp/unit`      |
+| Python Unit Tests  | `tests/python/unit`   |
 
 For detailed test cases, see the corresponding test files in `tests/`.
 
@@ -93,6 +101,7 @@ make coverage
 ```
 #### Python Code Coverage
 ```sh
+source .venv/bin/activate
 PYTHONPATH=./src/python pytest --cov=./ --cov-report=html:htmlcov/python tests/python
 ```
 

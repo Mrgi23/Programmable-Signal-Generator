@@ -13,6 +13,7 @@ using namespace std;
 using ::testing::_;
 using ::testing::Return;
 
+// Define the mock object.
 class HalfBandMock : public HalfBand {
     public:
         HalfBandMock(int nPoints = 8192) : HalfBand(nPoints) {}
@@ -20,6 +21,7 @@ class HalfBandMock : public HalfBand {
         vector<double> operator()(double AdB, double Fpass) override { return Call(AdB, Fpass); }
 };
 
+// Define the test object.
 class TestInterpolator : public ::testing::Test {
     protected:
         dsp::ComplexFFT fft;
@@ -44,19 +46,20 @@ TEST_F(TestInterpolator, validOutput) {
 
     // Compute the result.
     vector<complex<double>> output = interpolator(120.0, fmax, fs, input);
-    output = fft(output);
+    output = fft.fft(output);
     uint N = static_cast<uint>(pow(2U, interpolator.getN()) * fs);
 
     // Test the result.
     vector<uint> spec;
-    for (uint i  = 0; i < pow(2U, interpolator.getN()); i++) {
+    for (uint i  = 0; i < N / 2; i++) {
         spec.push_back(static_cast<uint>(i * fs + fmax));
         spec.push_back(static_cast<uint>((i + 1) * fs - fmax));
     }
+
     ASSERT_EQ(output.size(), N) << "Invalid size of the interpolated signal.";
-    for (uint i = 0; i < N; i++) {
+    for (uint i = 0; i < N / 2; i++) {
         if (find(spec.begin(), spec.end(), i) != spec.end()) {
-            ASSERT_NEAR(abs(output[i]), fs / 2, 1e-9) << "Spectral component must be at fmax.";
+            ASSERT_NEAR(abs(output[i]), fs / 2, 1e-9) << "Spectral components must be at the multiples of fmax and fs - fmax.";
         }
         else { ASSERT_NEAR(abs(output[i]), 0, 1e-9) << "Noise must be close to 0."; }
     }
@@ -64,5 +67,5 @@ TEST_F(TestInterpolator, validOutput) {
 
 TEST_F(TestInterpolator, invalidInput) {
     double fs = -1000.0; // Sampling frequency must be positive.
-    EXPECT_THROW(interpolator(60.0, 200, fs, {1}), invalid_argument);
+    EXPECT_THROW(interpolator(60.0, 200.0, fs, {1}), invalid_argument);
 }

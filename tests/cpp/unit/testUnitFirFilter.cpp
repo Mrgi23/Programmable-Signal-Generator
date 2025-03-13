@@ -3,6 +3,7 @@
 
 using namespace std;
 
+// Define the test object.
 class TestFIR : public ::testing::Test {
     protected:
         HalfBand halfband;
@@ -11,7 +12,7 @@ class TestFIR : public ::testing::Test {
 
 TEST_F(TestFIR, inverseSincValidOutput) {
     // Compute the result.
-    vector<double> b = inverseSinc(0.4, 0.025);
+    vector<double> b = inverseSinc(0.1, 0.1);
 
     // Test the result.
     for (uint i = 0; i < b.size() / 2; i++) { ASSERT_EQ(b[i], b[b.size()-1-i]) << "Filter must be symetric."; }
@@ -19,15 +20,15 @@ TEST_F(TestFIR, inverseSincValidOutput) {
 
 TEST_F(TestFIR, inverseSincOrderIncrease) {
     // Compute the result.
-    vector<double> bLower = inverseSinc(0.4, 0.025);
-    vector<double> bHigher = inverseSinc(0.45, 0.025);
+    vector<double> bLower = inverseSinc(0.1, 0.1);
+    vector<double> bHigher = inverseSinc(0.2, 0.1);
 
     // Test the result.
     ASSERT_LT(bLower.size(), bHigher.size()) << "Higher bandpass equals higher filter order.";
 
     // Compute the result.
-    bLower = inverseSinc(0.4, 0.25);
-    bHigher = inverseSinc(0.4, 0.025);
+    bLower = inverseSinc(0.1, 0.1);
+    bHigher = inverseSinc(0.1, 0.01);
 
     // Test the result.
     ASSERT_LT(bLower.size(), bHigher.size()) << "Lower error equals higher filter order.";
@@ -40,10 +41,10 @@ TEST_F(TestFIR, inverseSincTooHighOrder) {
 
 TEST_F(TestFIR, inverseSincInvalidInput) {
     double Fpass = -0.1; // Passband must lie between 0.0 and 0.5.
-    EXPECT_THROW(halfband(60.0, Fpass), invalid_argument);
+    EXPECT_THROW(inverseSinc(Fpass, 0.1), invalid_argument);
 
     Fpass = 0.6; // Passband must lie between 0.0 and 0.5.
-    EXPECT_THROW(halfband(60.0, Fpass), invalid_argument);
+    EXPECT_THROW(inverseSinc(Fpass, 0.1), invalid_argument);
 }
 
 TEST_F(TestFIR, halfBandValidOutput) {

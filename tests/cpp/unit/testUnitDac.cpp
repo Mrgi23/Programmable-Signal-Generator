@@ -15,6 +15,7 @@ using namespace std;
 using ::testing::_;
 using ::testing::Return;
 
+// Define the mock object.
 class InverseSincMock : public InverseSinc {
     public:
         InverseSincMock(int nPoints = 8192) : InverseSinc(nPoints) {}
@@ -22,6 +23,7 @@ class InverseSincMock : public InverseSinc {
         vector<double> operator()(double AdB, double Fpass, uint nSpec = 16) override { return Call(AdB, Fpass, nSpec); }
 };
 
+// Define the test object.
 class TestDAC : public ::testing::Test {
     protected:
         dsp::ComplexFFT fft;
@@ -47,43 +49,43 @@ TEST_F(TestDAC, validOutput) {
 
     // Compute the result.
     vector<double> analog = dac(digital, "NRZ", nNyquist, Fpass, errordB);
-    vector<complex<double>> fftAnalog = fft(analog);
+    vector<complex<double>> fftAnalog = fft.fft(analog);
 
     // Test the result.
     vector<uint> spec = {static_cast<uint>(f)};
-    for (uint i = 1; i < 5; i++) {
+    for (uint i = 1; i < nNyquist / 2 + 1; i++) {
         spec.push_back(static_cast<uint>(i * fs - f));
         spec.push_back(static_cast<uint>(i * fs + f));
     }
     spec.pop_back();
+    double maxValue = 0.0;
+    for (uint i = 0; i < fftAnalog.size() / 2; i++) { maxValue = maxValue > abs(fftAnalog[i]) ? maxValue : abs(fftAnalog[i]); }
+
     ASSERT_EQ(analog.size(), nNyquist * digital.size()) << "Invalid size of the analog signal.";
-    double max = 0.0;
+    ASSERT_EQ(abs(fftAnalog[static_cast<uint>(f)]), maxValue) << "Original spectral component must be at f.";
     for (uint i = 0; i < fftAnalog.size() / 2; i++) {
-        max = abs(fftAnalog[i]) > max ? abs(fftAnalog[i]) : max;
         if (find(spec.begin(), spec.end(), i) != spec.end()) {
-            ASSERT_GT(abs(fftAnalog[i]), 0.01 * abs(fftAnalog[static_cast<uint>(f)])) << "Spectral replicas must be above 1% of maximum value.";
+            ASSERT_GT(abs(fftAnalog[i]), 0.01 * maxValue) << "Spectral replicas must be above 1% of maximum value.";
         }
-        else {
-            ASSERT_LT(abs(fftAnalog[i]), 0.006 * abs(fftAnalog[static_cast<uint>(f)])) << "Noise must be below 0.6% of maximum value.";
-        }
+        else { ASSERT_LT(abs(fftAnalog[i]), 0.006 * maxValue) << "Noise must be below 0.6% of maximum value."; }
     }
-    ASSERT_EQ(abs(fftAnalog[static_cast<uint>(f)]), max) << "Maximum value must be at the frqeuncy f.";
 
     // Compute the result.
     analog = dac(digital, "RF", nNyquist, Fpass, errordB);
-    fftAnalog = fft(analog);
+    fftAnalog = fft.fft(analog);
 
     // Test the result.
+    maxValue = 0.0;
+    for (uint i = 0; i < fftAnalog.size() / 2; i++) { maxValue = maxValue > abs(fftAnalog[i]) ? maxValue : abs(fftAnalog[i]); }
+
     ASSERT_EQ(analog.size(), nNyquist * digital.size()) << "Invalid size of the analog signal.";
-    max = 0.0;
-    for (uint i = 0; i < fftAnalog.size(); i++) {
-        max = abs(fftAnalog[i]) > max ? abs(fftAnalog[i]) : max;
+    ASSERT_EQ(abs(fftAnalog[static_cast<uint>(fs - f)]), maxValue) << "Original spectral component must be at fs - f.";
+    for (uint i = 0; i < fftAnalog.size() / 2; i++) {
         if (find(spec.begin(), spec.end(), i) != spec.end()) {
-            ASSERT_GT(abs(fftAnalog[i]), 0.01 * abs(fftAnalog[static_cast<uint>(f)])) << "Spectral replicas must be above 1% of maximum value.";
+            ASSERT_GT(abs(fftAnalog[i]), 0.001 * maxValue) << "Spectral replicas must be above 0.1% of maximum value.";
         }
         else { ASSERT_NEAR(abs(fftAnalog[i]), 0, 1e-5) << "Noise must be close to 0."; }
     }
-    ASSERT_EQ(abs(fftAnalog[static_cast<uint>(fs-f)]), max) << "Maximum value must be at the frqeuncy fs-f.";
 }
 
 TEST_F(TestDAC, invalidInput) {

@@ -3,11 +3,11 @@
 
 #ifdef __cplusplus
 
+#include <algorithm>
+#include <armadillo>
 #include <complex>
 #include <type_traits>
 #include <vector>
-
-constexpr std::complex<double> complexJ = {0.0, 1.0};
 
 template<typename T>
 struct is_complex : std::false_type {};
@@ -17,35 +17,48 @@ struct is_complex<std::complex<T>> : std::true_type {};
 
 namespace dsp {
     class ComplexFFT {
-        private:
-            std::vector<std::complex<double>> chirpZ(uint N, const std::vector<std::complex<double>>& x);
-            std::vector<std::complex<double>> dft(const std::vector<std::complex<double>>& x);
-            std::vector<std::complex<double>> radix2(const std::vector<std::complex<double>>& x);
         public:
             ComplexFFT() {}
             ~ComplexFFT() {}
 
             template <typename T>
-            std::vector<std::complex<double>> operator()(const std::vector<T>& x, uint N = 0) {
+            std::vector<std::complex<double>> fft(const std::vector<T>& x, uint N = 0) {
                 // Adjust the number of points for FFT, accordingly.
                 uint Nfft = N;
                 if (!Nfft) { Nfft = x.size(); }
 
-                // Cast input type to complex.
-                std::vector<std::complex<double>> xfft;
-                for (T sample : x) { xfft.push_back(static_cast<std::complex<double>>(sample)); }
+                // Compute FFT with Armadillo.
+                arma::cx_vec armaXfft;
+                if constexpr (std::is_same_v<T, double>) {
+                    arma::vec armaX(x);
+                    armaXfft = arma::fft(armaX, Nfft);
+                }
+                else if constexpr (std::is_same_v<T, std::complex<double>>) {
+                    arma::cx_vec armaX(x);
+                    armaXfft = arma::fft(armaX, Nfft);
+                }
 
-                // Zero-padding, if necessary.
-                if (xfft.size() < Nfft) { xfft.resize(Nfft, {0.0, 0.0}); }
+                // Cast Armadillo vector to standard complex vector.
+                std::vector<std::complex<double>> xfft(armaXfft.begin(), armaXfft.end());
+                return xfft;
+            }
 
-                // If number of FFT points is equal to the number of 2, compute FFT using radix2.
-                if (!(Nfft & (Nfft - 1))) { return radix2(xfft); }
+            template <typename T>
+            std::vector<T> fftshift(const std::vector<T>& x) {
+                // Define the shifted output.
+                std::vector<T> shifted(x.size());
 
-                // For smaller signals, compute FFT using DFT.
-                if (x.size() <= Nfft && Nfft < 50) { return dft(xfft); }
+                // Calculate the pivot for the shift.
+                uint middle = shifted.size() / 2;
 
-                // Otherwise, compute FFT using chirpZ.
-                return chirpZ(Nfft, xfft);
+                // Shift all elements around the pivot.
+                for (uint i = 0; i < shifted.size(); i++) {
+                    uint shift;
+                    if (x.size() % 2) { shift = (i + middle + 1) % x.size(); }
+                    else { shift = (i + middle) % x.size(); }
+                    shifted[i] = x[shift];
+                }
+                return shifted;
             }
     };
     template <typename T>
@@ -135,15 +148,6 @@ namespace dsp {
         }
         return y;
     };
-    std::vector<double> remez(
-        uint numtaps,
-        const std::vector<double>& bands,
-        const std::vector<double>& desired,
-        const std::vector<double>& weights = {},
-        double fs = 1.0,
-        uint maxIter = 25,
-        uint gridDensity = 16
-    );
 }
 
 #endif
