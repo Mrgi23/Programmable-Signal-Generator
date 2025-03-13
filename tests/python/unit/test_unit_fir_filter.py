@@ -2,13 +2,10 @@ import numpy as np
 import pytest
 from fir_filter import HalfBand, InverseSinc
 
+# Define the test object.
 @pytest.fixture
 def inversesinc_filter():
     return InverseSinc()
-
-@pytest.fixture
-def halfband_filter():
-    return HalfBand()
 
 def test_inversesinc_valid_output(inversesinc_filter):
     # Compute the result.
@@ -21,9 +18,6 @@ def test_inversesinc_order_increase(inversesinc_filter):
     # Compute the result.
     b_lower = inversesinc_filter(0.1, 0.1)
     b_higher = inversesinc_filter(0.2, 0.1)
-
-    print(len(b_lower))
-    print(len(b_higher))
 
     # Test the result.
     assert(len(b_lower) < len(b_higher)), "Higher bandpass equals higher filter order."
@@ -40,10 +34,15 @@ def test_inversesinc_too_high_order(inversesinc_filter):
         inversesinc_filter(0.49, 0.0025)
 
 def test_inversesinc_invalid_input(inversesinc_filter):
-    f_passes = [-0.1, 0.6]
-    for f_pass in f_passes:
-        with pytest.raises(ValueError, match="InverseSinc.__call__: Passband must lie between 0.0 and 0.5."):
-            inversesinc_filter(f_pass, 0.1)
+    with pytest.raises(ValueError, match="InverseSinc.__call__: Passband must lie between 0.0 and 0.5."):
+        inversesinc_filter(-0.1, 0.1)
+    with pytest.raises(ValueError, match="InverseSinc.__call__: Passband must lie between 0.0 and 0.5."):
+        inversesinc_filter(0.6, 0.1)
+
+# Define the test object.
+@pytest.fixture
+def halfband_filter():
+    return HalfBand()
 
 def test_halfband_valid_output(halfband_filter):
     # Compute the result.
@@ -75,8 +74,6 @@ def test_halfband_too_high_order(halfband_filter):
 
 def test_halfband_invalid_input(halfband_filter):
     with pytest.raises(ValueError, match="Passband must lie between 0.0 and 0.25."):
-        f_pass = -0.1
-        halfband_filter(120.0, f_pass)
+        halfband_filter(120.0, -0.1)
     with pytest.raises(ValueError, match="Passband must lie between 0.0 and 0.25."):
-        f_pass = 0.3
-        halfband_filter(120.0, f_pass)
+        halfband_filter(120.0, 0.3)
