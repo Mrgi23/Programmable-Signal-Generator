@@ -82,7 +82,65 @@ PYTHONPATH=./src/python pytest tests/python/unit
 | C++ Unit Tests     | `tests/cpp/unit`      |
 | Python Unit Tests  | `tests/python/unit`   |
 
-For detailed test cases, see the corresponding test files in `tests/`.
+For detailed test cases, see the corresponding test files in `tests/<language>/unit`.
+
+## Integration Testing
+Integration tests verify that the various components of the Programmable Signal Generator work together correctly. These tests ensure that data flows properly between modules, that signal transformations are performed as expected, and that the overall system produces the correct output when given a known input.
+
+### Scope of Integration Testing
+- Verify core modules, **Interpolator**, **Complex Mixer**, **Sinc Compensation Filter**, and **Digital-to-Analog Converter interact correctly, ensuring data is passed seamlessly between them**.
+- Ensure **complete processing chain produces the expected output**.
+- Assess **performance and robustness of the overall system when all components are integrated**.
+
+### Visual Overview of the Signal Processing Chain
+The following images illustrate the key steps in our Programmable Signal Generator’s signal processing pipeline. Each step transforms the signal toward its final analog output, with distinct processing for **NRZ (Non-Return-to-Zero)** and **RF (Bipolar Non-Return-to-Zero)** modes.
+
+#### 1. Input Signal:
+This image shows the raw digital input signal as captured by the **ADC**. It serves as the starting point for the processing chain.
+![Alt text](images/input.png)
+
+#### 2. Interpolated Signal:
+The input signal is upsampled (interpolated) to increase the resolution and smoothness of the spectrum. This step prepares the signal for accurate frequency shifting and further processing.
+![Alt text](images/interpolated.png)
+
+#### 3a. Shifted Signal (NRZ Mode):
+Using a **CORDIC algorithm**, the interpolated signal is frequency shifted into the **first Nyquist zone**. This placement is optimal for **NRZ** mode, ensuring that the signal's frequency components align with the **DAC**'s requirements for **NRZ** output.
+![Alt text](images/shifted_nrz.png)
+
+#### 3b. Shifted Signal (RF Mode):
+Similarly, the **CORDIC algorithm** shifts the interpolated signal into the **second Nyquist zone**. This mode-specific transformation prepares the signal for **RF** mode operation by positioning its frequency content in the zone most suitable for **RF** **DAC** processing.
+![Alt text](images/shifted_rf.png)
+
+#### 4a. Analog Signal Output (NRZ Mode):
+After shifting the signal is passed through an **inverse $sinc$ FIR filter** to counteract the distortion introduced by the **DAC**’s inherent $sinc$ response. This simulated **DAC** output provides the corrected analog spectrum for NRZ mode.
+![Alt text](images/analog_nrz.png)
+
+#### 4b. Analog Signal Output (RF Mode):
+For **RF** mode, following the shift, the signal is converted to analog in a mode optimized for **RF** applications. In this mode, the inherent **DAC** response is appropriate, so no additional filtering is applied, yielding a spectrum tailored for **RF** operation.
+![Alt text](images/analog_rf.png)
+
+###  Running Integration Tests
+#### C++ Tests
+```sh
+mkdir -p tests/build && cd tests/build
+cmake ..
+make
+./integrationTests
+```
+
+#### Python Tests
+```sh
+source .venv/bin/activate
+PYTHONPATH=./src/python pytest tests/python/integration
+```
+
+### Test File Location
+| **Language**              | **Directory**              |
+|---------------------------|----------------------------|
+| C++ Integration Tests     | `tests/cpp/integration`    |
+| Python Integration Tests  | `tests/python/integration` |
+
+For detailed test cases, see the corresponding test files in `tests/<language>/integration`.
 
 ## **Code Coverage**
 Code coverage ensures tests sufficiently exercise the codebase, identifying untested portions.
@@ -123,10 +181,8 @@ The testing framework is integrated with **GitLab CI/CD**, ensuring automated te
 The pipeline is structured into the following stages:
 | **Stage**    | **Purpose** |
 |--------------|-------------|
-| **Setup**    | Installs dependencies (CMake, Clang, Python, Google Test, pytest) |
 | **Build**    | Compiles C++ tests |
-| **Test**     | Runs C++ (Google Test) and Python (pytest) tests |
-| **Coverage** | Generates test coverage reports for C++ (`llvm-cov`) and Python (`pytest-cov`) |
+| **Test**     | Runs both C++ (Google Test) and Python (pytest) tests, and generates coverage reports using `llvm-cov` and `pytest-cov` |
 | **Deploy**   | Publishes coverage reports via **GitLab Pages** |
 
 ### When Does CI/CD Run?
