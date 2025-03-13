@@ -17,9 +17,6 @@ include(FetchContent)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Prevent overriding parent project's compiler/linker settings
-set(BUILD_SHARED_LIBS ON CACHE BOOL "Build shared libraries" FORCE)
-
 # Fetch Armadillo
 FetchContent_Declare(
   armadillo

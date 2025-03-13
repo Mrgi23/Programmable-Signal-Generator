@@ -181,13 +181,14 @@ The testing framework is integrated with **GitLab CI/CD**, ensuring automated te
 The pipeline is structured into the following stages:
 | **Stage**    | **Purpose** |
 |--------------|-------------|
+| **Setup**    | Builds and pushes a custom Docker image with all dependencies pre-installed (`cmake`, `clang`, `llvm`, `python3.10`, `googletest`, `googlemock`, `pytest`, etc.) |
 | **Build**    | Compiles C++ tests |
 | **Test**     | Runs both C++ (Google Test) and Python (pytest) tests, and generates coverage reports using `llvm-cov` and `pytest-cov` |
 | **Deploy**   | Publishes coverage reports via **GitLab Pages** |
 
 ### When Does CI/CD Run?
 The CI/CD pipeline is triggered in the following cases:
-- On every merge request to `develop` or `main` branches
+- On every commit and merge request to `develop` or `main` branches
 - On manual pipeline execution from **GitLab UI**
 
 **The pipeline is blocked if tests fail**, ensuring only validated code is merged.
