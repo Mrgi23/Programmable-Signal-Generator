@@ -35,7 +35,7 @@ $$F_{stop} = \frac{f_s}{4}$$
 - The **filter order:**
     For optimal FIR filter calculated using **Remez algorithm**, the required filter order is estimated using **Harris' formula**:
 
-    $$N = \frac{2A_{dB}}{23(0.5 - 2F_{pass})}$$
+    $$N = \frac{A_{dB}}{46(0.5 - 2F_{pass})}$$
 
     Since FIR filters require even orders, we ensure:
 

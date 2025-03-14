@@ -5,14 +5,14 @@ import scipy.signal as signal
 class FIR(ABC):
     def __init__(self, n_points: int = 8192) -> None:
         super().__init__()
-        self.n_points = n_points
+        self._n_points = n_points
 
 class InverseSinc(FIR):
     def __init__(self, n_points = 8192) -> None:
         super().__init__(n_points)
 
     def __call__(self, F_pass: float, error_dB: float, n_spec: int = 16):
-        if F_pass < 0.0 or F_pass > 0.5:
+        if F_pass <= 0.0 or F_pass >= 0.5:
             raise ValueError("InverseSinc.__call__: Passband must lie between 0.0 and 0.5.")
 
         # Compute spectrum of frequencies.
@@ -40,7 +40,7 @@ class InverseSinc(FIR):
             b = signal.firls(N, f_target, h_target)
 
             # Compute the frequency response.
-            f, h_inverse = signal.freqz(b, 1, worN=self.n_points, fs=1.0)
+            f, h_inverse = signal.freqz(b, 1, worN=self._n_points, fs=1.0)
 
             # Compute sinc response and reduce singularity.
             with np.errstate(divide='ignore', invalid='ignore'):
@@ -67,14 +67,14 @@ class HalfBand(FIR):
         super().__init__(n_points)
 
     def __call__(self, A_dB: float, F_pass: float) -> np.ndarray:
-        if F_pass < 0.0 or F_pass > 0.25:
+        if F_pass <= 0.0 or F_pass >= 0.25:
             raise ValueError("HalfBand.__call__: Passband must lie between 0.0 and 0.25.")
 
         # Passband ripple.
         delta_pass = 10 ** (-abs(A_dB) / 20)
 
         # Harris formula for initial filter order.
-        N = int(2 * abs(A_dB) / (23 * (0.5 - 2 * F_pass)))
+        N = int(abs(A_dB) / (46 * (0.5 - 2 * F_pass)))
 
         # Type II filter, even number of taps.
         if N % 2:
@@ -87,7 +87,7 @@ class HalfBand(FIR):
                 b = signal.remez(N, [0.0, 2 * F_pass], [1.0])
 
                 # Compute the frequency response.
-                f, h = signal.freqz(b, 1, worN=self.n_points, fs=1.0)
+                f, h = signal.freqz(b, 1, worN=self._n_points, fs=1.0)
 
                 # Calculate error and error frequency response.
                 error = 2 * delta_pass

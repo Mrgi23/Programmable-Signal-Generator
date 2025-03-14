@@ -1,5 +1,6 @@
 #include <cmath>
 #include <complex>
+#include <liquid.h>
 #include <stdexcept>
 #include "utils.h"
 #include "dsp.h"
@@ -8,7 +9,7 @@
 using namespace std;
 
 vector<double> InverseSinc::operator()(double Fpass, double errordB, uint nSpec) {
-    if (Fpass < 0.0 || Fpass > 0.5) { throw invalid_argument("InverseSinc.operator(): Passband must lie between 0.0 and 0.5."); }
+    if (Fpass <= 0.0 || Fpass >= 0.5) { throw invalid_argument("InverseSinc.operator(): Passband must lie between 0.0 and 0.5."); }
 
     // Compute spectrum of frequencies.
     vector<double> f = utils::linspace(0.0, Fpass, nSpec + 1);
@@ -65,13 +66,13 @@ vector<double> InverseSinc::operator()(double Fpass, double errordB, uint nSpec)
 }
 
 vector<double> HalfBand::operator()(double AdB, double Fpass) {
-    if (Fpass < 0.0 || Fpass > 0.25) { throw invalid_argument("HalfBand.operator(): Passband must lie between 0.0 and 0.25."); }
+    if (Fpass <= 0.0 || Fpass >= 0.25) { throw invalid_argument("HalfBand.operator(): Passband must lie between 0.0 and 0.25."); }
 
     // Passband ripple.
     double deltaPass = pow(10.0, -abs(AdB) / 20.0);
 
     // Harris formula for initial filter order.
-    uint N = static_cast<uint>(2 * abs(AdB) / (23 * (0.5 - 2 * Fpass)));
+    uint N = static_cast<uint>(abs(AdB) / (46 * (0.5 - 2 * Fpass)));
 
     // Type II filter, even number of taps.
     if (N % 2) { N += 1; }
@@ -81,9 +82,22 @@ vector<double> HalfBand::operator()(double AdB, double Fpass) {
 
     // Iterate until filter is created.
     while (true) {
-        try {
-            // Design the filter, if possinble.
-            vector<double>b = dsp::remez(N, {0.0, 2 * Fpass}, {1.0});
+
+        // Design the halfband filter, if possible.
+        vector<float> bands = {0.0f, static_cast<float>(2 * Fpass)};
+        vector<float> des = {1.0f, 0.0f};
+        vector<float> weights = {1.0};
+        vector<liquid_firdespm_wtype> wtype = {LIQUID_FIRDESPM_FLATWEIGHT};
+        vector<float> c(N, 0.0f);
+
+        int firOK = firdespm_run(
+            N, 1, bands.data(), des.data(), weights.data(), wtype.data(), LIQUID_FIRDESPM_BANDPASS, c.data()
+        );
+
+        if (firOK == LIQUID_OK && !isnan(c[1])) {
+            // Design the low-pass filter from halfband.
+            vector<double> b(c.begin(), c.end());
+            // for (uint i = 0; i < N; i++) { b[i] = 2 * static_cast<double>(c[2 * i + 1]); }
 
             // Compute the frequency response.
             vector<complex<double>> h = dsp::freqz(f, b, nPoints);
@@ -91,10 +105,10 @@ vector<double> HalfBand::operator()(double AdB, double Fpass) {
             // Calculate error.
             double error = 2 * deltaPass;
 
+            // Check if the low-pass filter satisfy constrains.
             bool isCreated = true;
             for (uint i = 0; i < nPoints; i++) {
-                // Check if the filter satisfy constrains.
-                if (f[i] < Fpass && abs(abs(h[i]) - 1.0) > error) {
+                if (f[i] < 2 * Fpass && abs(abs(h[i]) - 1.0) > error) {
                     isCreated = false;
                     break;
                 }
@@ -102,15 +116,12 @@ vector<double> HalfBand::operator()(double AdB, double Fpass) {
 
             // Compute the halfband filter.
             if (isCreated) {
-                vector<double> coeffs(2 * N - 1, 0);
-                for (uint i = 0; i < N; i++) { coeffs[2*i] = 0.5 * b[i]; }
-                coeffs[N-1] = 0.5;
+                vector<double> coeffs(2 * N - 1, 0.0);
+                for (uint i = 0; i < N; i++) { coeffs[2 * i] = 0.5 * b[i]; }
+                coeffs[N - 1] = 0.5;
                 return coeffs;
             }
-
         }
-        catch(const exception) {}
-
         // Increase the filter order.
         N += 2;
 

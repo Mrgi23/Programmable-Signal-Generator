@@ -12,18 +12,18 @@ vector<complex<double>> Interpolator::operator()(
 ) {
     if (fs <= 0.0) { throw invalid_argument("Interpolator.operator(): Sampling frequency must be positive."); }
 
-    // InDefineitialize the output signal.
+    // Define the output signal.
     vector<complex<double>> output = input;
 
     // Propagate output signal through the interpolation 4 times.
-    for (int i = 0; i < 4; i++) {
+    for (int i = 1; i < N + 1  ; i++) {
         // Upsample previous output signal by factor 2.
         output = upsample(2, output);
 
         // Compute FIR filter coefficients.
         int factor = pow(2, i);
         double Fpass = fmax / (factor * fs);
-        vector<double> b = halfband(AdB, Fpass);
+        vector<double> b = (*halfband)(AdB, Fpass);
 
         // Filter the upsampled signal.
         output = filter(b, output);
