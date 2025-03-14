@@ -27,8 +27,8 @@ vector<double> ComplexMixer::operator()(
     uint Wmax = pow(2, L);
 
     // Compute phase increment and accumulated phases for the desired shift frequency.
-    uint W = static_cast<uint>(fshift * Wmax / fs) % Wmax;
-    vector<uint> Z = NCO(W, Wmax, I.size());
+    double W = fmod(fshift * Wmax / fs, Wmax);
+    vector<double> Z = NCO(W, Wmax, I.size());
 
     // Rotate the vector.
     vector<double> Iout = CORDIC(Wmax, Z, I, Q);
@@ -37,7 +37,7 @@ vector<double> ComplexMixer::operator()(
 
 vector<double> ComplexMixer::CORDIC(
     uint Wmax,
-    const vector<uint>& Z,
+    const vector<double>& Z,
     const vector<double>& I,
     const vector<double>& Q
 ) {
@@ -50,7 +50,7 @@ vector<double> ComplexMixer::CORDIC(
         complex<double> v = {I[i], Q[i]};
 
         // Define the current phase error.
-        double z = static_cast<double>(Z[i]);
+        double z = Z[i];
 
         // Perform CORDIC iterations.
         for (int k = 0; k < nIter; k++) {
@@ -78,9 +78,9 @@ vector<double> ComplexMixer::CORDIC(
     return Iout;
 }
 
-vector<uint> ComplexMixer::NCO(uint W, uint Wmax, uint nPoints) {
+vector<double> ComplexMixer::NCO(double W, uint Wmax, uint nPoints) {
     // Compute accumulated phases and wrap them around Wmax.
-    vector<uint> Z = utils::linspace(0U, nPoints + 1, nPoints + 1, false);
-    for (uint i = 0; i < nPoints + 1; i++) { Z[i] = (Z[i] * W) % Wmax; }
+    vector<double> Z = utils::linspace(0.0, static_cast<double>(nPoints + 1), nPoints + 1, false);
+    for (uint i = 0; i < nPoints + 1; i++) { Z[i] = fmod(Z[i] * W, Wmax); }
     return Z;
 }

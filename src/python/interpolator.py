@@ -3,8 +3,13 @@ import scipy.signal as signal
 from fir_filter import HalfBand
 
 class Interpolator():
-    def __init__(self) -> None:
-        self.halfband = HalfBand()
+    def __init__(self, N: int = 4, n_points: int = 8192) -> None:
+        self.__N = N
+        self.__halfband = HalfBand(n_points)
+
+    @property
+    def N(self):
+        return self.__N
 
     def __call__(self, A_dB: float, f_max: float, fs: float, input: np.ndarray) -> np.ndarray:
         if fs <= 0:
@@ -14,14 +19,14 @@ class Interpolator():
         output = input
 
         # Propagate output signal through the interpolation 4 times.
-        for i in range(4):
+        for i in range(1, self.N + 1):
             # Upsample previous output signal by factor 2.
             output = self.__upsample(2, output)
 
             # Compute FIR filter coefficients.
             factor = (2 ** i)
             F_pass = f_max / (factor * fs)
-            b = self.halfband(A_dB, F_pass)
+            b = self.__halfband(A_dB, F_pass)
 
             # Filter the upsampled signal.
             output = self.__filter(b, output)

@@ -14,36 +14,47 @@ variables:
   BUILD_DIR: ${CI_PROJECT_DIR}/tests/build
   COVERAGE_CPP_DIR: ${CI_PROJECT_DIR}/htmlcov/cpp
   COVERAGE_PY_DIR: ${CI_PROJECT_DIR}/htmlcov/python
+  IMAGE_NAME: registry.gitlab.com/mrgi23/programmable-signal-generator/psg:latest
 
-before_script:
-  - export PATH="/usr/local/bin:$PATH"
-  - mkdir -p ${BUILD_DIR}
-  - mkdir -p ${COVERAGE_CPP_DIR}
-  - mkdir -p ${COVERAGE_PY_DIR}
-
-build:
-  stage: build
-  image: ubuntu:latest
+setup_image:
+  stage: setup
+  image: docker:latest
+  services:
+    - docker:dind
+  rules:
+    - changes:
+      - Dockerfile
+      - requirements.txt
   script:
-    - apt update && apt install -y cmake clang llvm ninja-build git
+    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY
+    - docker build -t psg:latest .
+    - docker tag psg:latest $IMAGE_NAME
+    - docker push $IMAGE_NAME
+
+build_cpp:
+  stage: build
+  image: $IMAGE_NAME
+  script:
+    - mkdir -p ${BUILD_DIR}
     - cd ${BUILD_DIR}
     - cmake ..
     - cmake --build .
   artifacts:
     paths:
-      - ${BUILD_DIR}/runAllTests.exe
+      - ${BUILD_DIR}
     expire_in: 1 hour
 
 test_cpp:
   stage: test
-  image: ubuntu:latest
+  image: $IMAGE_NAME
   script:
-    - apt update && apt install -y llvm lcov
+    - mkdir -p ${COVERAGE_CPP_DIR}
     - cd ${BUILD_DIR}
-    - LLVM_PROFILE_FILE=coverage.profraw ./runAllTests.exe
-    - llvm-profdata merge -sparse coverage.profraw -o coverage.profdata
-    - llvm-cov report ./runAllTests.exe -instr-profile=coverage.profdata > coverage.txt
-    - llvm-cov export ./runAllTests.exe -instr-profile=coverage.profdata -format=lcov > ${COVERAGE_CPP_DIR}/coverage.lcov
+    - LLVM_PROFILE_FILE=coverageUnit.profraw ./unitTests
+    - LLVM_PROFILE_FILE=coverageIntegration.profraw ./integrationTests
+    - llvm-profdata merge -sparse coverageUnit.profraw coverageIntegration.profraw -o coverage.profdata
+    - llvm-cov export ./unitTests ./integrationTests -instr-profile=coverage.profdata --ignore-filename-regex=".*armadillo_bits/.*" -format=lcov > ${COVERAGE_CPP_DIR}/coverage.lcov
+    - llvm-cov report ./unitTests ./integrationTests -instr-profile=coverage.profdata --ignore-filename-regex=".*armadillo_bits/.*" > coverage.txt
     - genhtml ${COVERAGE_CPP_DIR}/coverage.lcov --output-directory ${COVERAGE_CPP_DIR}/
     - cat coverage.txt
   coverage: '/TOTAL\s+\d+\s+\d+\s+\d+\.\d+%\s+\d+\s+\d+\s+\d+\.\d+%\s+\d+\s+\d+\s+(\d+\.\d+)%/'
@@ -54,12 +65,9 @@ test_cpp:
 
 test_py:
   stage: test
-  image: python:3.10
+  image: $IMAGE_NAME
   script:
-    - python3 -m venv venv
-    - source venv/bin/activate
-    - pip install --upgrade pip
-    - pip install -r requirements.txt
+    - mkdir -p ${COVERAGE_PY_DIR}
     - PYTHONPATH=./src/python pytest --cov=./ --cov-report=term --cov-report=html:${COVERAGE_PY_DIR} tests/python | tee coverage.txt
   coverage: '/TOTAL\s+\d+\s+\d+\s+(\d+(?:\.\d+)?)%/'
   artifacts:
@@ -69,7 +77,7 @@ test_py:
 
 pages:
   stage: deploy
-  image: ubuntu:latest
+  image: $IMAGE_NAME
   script:
     - mkdir -p public
     - cp -r ${COVERAGE_CPP_DIR} public/cpp

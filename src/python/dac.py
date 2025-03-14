@@ -3,8 +3,8 @@ import scipy.signal as signal
 from fir_filter import InverseSinc
 
 class DAC():
-    def __init__(self) -> None:
-        self.inverse_sinc = InverseSinc()
+    def __init__(self, n_points: int = 8192) -> None:
+        self.__inverse_sinc = InverseSinc(n_points)
 
     def __call__(
         self,
@@ -19,7 +19,7 @@ class DAC():
 
         # Filter the input signal with the sinc compensation filter, if necessary.
         if mode == "NRZ":
-            b = self.inverse_sinc(F_pass, error_dB)
+            b = self.__inverse_sinc(F_pass, error_dB)
             filtered_digital = signal.lfilter(b, 1, digital)
         else:
             filtered_digital = digital

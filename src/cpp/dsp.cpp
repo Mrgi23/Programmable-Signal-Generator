@@ -1,109 +1,10 @@
-#include <algorithm>
 #include <cmath>
 #include <stdexcept>
 #include "dsp.h"
-#include "utils.h"
 
 using namespace std;
 
 namespace dsp {
-    vector<complex<double>> ComplexFFT::chirpZ(uint N, const vector<complex<double>>& x) {
-        // Calculate convolution in next power of 2 elements atleast 2 * N - 1.
-        uint Nfft = 1u << static_cast<uint>(ceil(log2(2 * N - 1)));
-
-        // Define modified signal and convolution kernel.
-        vector<complex<double>> xTilde(Nfft, {0.0, 0.0});
-        vector<complex<double>> k(Nfft, {0.0, 0.0});
-
-        // Compute current kernel sample and modified x sample.
-        // xTilde[n] = x[n] * exp(-j x pi x n ^ 2 / N).
-        // kernel[n] = exp(j x pi x n ^ 2 / N), kernel[-n] = kernel[n].
-        for (int n = 0; n < N; n++) {
-            double t = static_cast<double>(n * n) / static_cast<double>(N);
-            k[n] = exp(complexJ * M_PI * t);
-            if (n > 0) { k[Nfft - n] = k[n]; }
-            xTilde[n] = x[n] * exp(-1.0 * complexJ * M_PI * t);
-        }
-
-        // Perform FFTs of both zero-padded sequences using the radix2 FFT.
-        vector<complex<double>> Xtilde = radix2(xTilde);
-        vector<complex<double>> K = radix2(k);
-
-        // Perform convolution in frequency domain.
-        vector<complex<double>> Y(Nfft, {0.0, 0.0});
-        for (uint n = 0; n < Nfft; n++) { Y[n] = Xtilde[n] * K[n]; }
-
-        // Perform inverse FFT (y = conj(fft(conj(Y)))) / Nfft.
-        vector<complex<double>> Yconj(Nfft);
-        for (uint n = 0; n < Nfft; n++) { Yconj[n] = conj(Y[n]); }
-        vector<complex<double>> y = radix2(Yconj);
-        for (uint n = 0; n < Nfft; n++) { y[n] = conj(y[n]) / static_cast<double>(Nfft); }
-
-        // Perform chirpZ FFT of the input signal.
-        // X[n] = exp(-j x pi x n ^ 2 / N) xTilde[n] * k[n].
-        vector<complex<double>> X(N, {0.0, 0.0});
-        for (uint n = 0; n < N; n++) {
-            double t = static_cast<double>(n * n) / static_cast<double>(N);
-            X[n] = y[n] * exp(-complexJ * M_PI * t);
-        }
-        return X;
-    }
-
-    vector<complex<double>> ComplexFFT::dft(const vector<complex<double>>& x) {
-        // Define the FT output.
-        int N = x.size();
-        vector<complex<double>> X(N, {0.0, 0.0});
-
-        // Perform DFT.
-        // X[k] = x[n] * exp(-2 * j * pi * k * n / N).
-        for (int k = 0; k < N; k++) {
-            for (int n = 0; n < N; n++) {
-                // Calculate twiddle factor.
-                double t = static_cast<double>(k * n) / static_cast<double>(N);
-                complex<double> W = exp(-2.0 * complexJ * M_PI * t);
-
-                // Calculate current DFT sample.
-                X[k] += x[n] * W;
-            }
-        }
-        return X;
-    }
-
-    vector<complex<double>> ComplexFFT::radix2(const vector<complex<double>>& x) {
-        // Retrurn original array if it is of size 1.
-        int N = x.size();
-        if (N == 1) { return x; }
-
-        // Compute even and odd elements.
-        vector<complex<double>> Xeven(N / 2, {0.0, 0.0});
-        vector<complex<double>> Xodd(N / 2, {0.0, 0.0});
-        for (int n = 0; n < N / 2; n++) {
-            Xeven[n] = x[2 * n];
-            Xodd[n] = x[2 * n + 1];
-        }
-
-        // Perform radix2 recursively.
-        Xeven = radix2(Xeven);
-        Xodd = radix2(Xodd);
-
-        // Define the FT output.
-        vector<complex<double>> X(N, complex<double>(0.0, 0.0));
-
-        // Perform radix2 algorithm.
-        // X[k] = Xeven[x] + Xodd[k] * exp(-2 * j * M_PI * k / N).
-        // X[k + N / 2] = Xeven[x] - Xodd[k] * exp(-2 * j * M_PI * k / N).
-        for (int k = 0; k < N / 2; k++) {
-            // Calculate twiddle factor.
-            double t = static_cast<double>(k) / static_cast<double>(N);
-            complex<double> W = exp(-2.0 * complexJ * M_PI * t);
-
-            // Calculate current radix2 sample.
-            X[k] = Xeven[k] + W * Xodd[k];
-            X[k + N / 2] = Xeven[k] - W * Xodd[k];
-        }
-        return X;
-    }
-
     vector<double> firls(
         uint numtaps,
         const vector<double>& bands,
@@ -144,15 +45,14 @@ namespace dsp {
         uint M = (numtaps - 1) / 2;
 
         // Define a frequency grid. Sample from 0 to pi (radians).
-        vector<double> omega = utils::linspace(0.0, M_PI, gridSize);
+        arma::vec omega = arma::linspace(0.0, M_PI, gridSize);
 
         // Compute a dense frequency grid along with desired response and weights.
-        vector<double> gridDesired(gridSize, 0.0);
-        vector<double> gridWeights(gridSize, 0.0);
+        arma::vec gridDesired(gridSize, arma::fill::zeros);
+        arma::vec gridWeights(gridSize, arma::fill::zeros);
         for (uint i = 0; i < gridSize; i++) {
             // For each grid point, map the radian frequency w to Hz.
-            double w = omega[i];
-            double f = (w / M_PI) * (fs / 2.0);
+            double f = (omega(i) / M_PI) * (fs / 2.0);
 
             // Loop over each band (each defined by two consecutive elements in bands/desired).
             for (uint b = 0; b < numBands; b++) {
@@ -166,8 +66,8 @@ namespace dsp {
                     double t = (f - fstart) / (fstop - fstart);
 
                     // Frequencies outside any specified band get zero desired response and zero weight.
-                    gridDesired[i] = d1 + t * (d2 - d1);
-                    gridWeights[i] = weights[b];
+                    gridDesired(i) = d1 + t * (d2 - d1);
+                    gridWeights(i) = weights[b];
                     break;
                 }
             }
@@ -177,32 +77,31 @@ namespace dsp {
         // For a symmetric FIR filter, the frequency response (ignoring linear phase delay) is:
         // F(w) ≈ a0 + 2 * sum_{k=1}^{M} a[k] cos(k w)
         // Each row i of A is: [1, 2*cos(w[i]), 2*cos(2w[i]), ..., 2*cos(M w[i])].
-        vector<vector<double>> A(gridSize, vector<double>(M + 1, 0.0));
-        for (uint i = 0; i < gridSize; i++) {
-            double w = omega[i];
-            A[i][0] = 1.0;
-            for (int k = 1; k <= M; k++) { A[i][k] = 2 * cos(w * k); }
+        arma::mat A(gridSize, M + 1);
+        for (uint j = 0; j <= M; j++) {
+            A.col(j) = 2 * arma::cos(omega * j);
         }
+        A.col(0).ones();
 
-        vector<double> b = gridDesired;
-        for (uint i = 0; i < gridSize; i++) {
-            // Apply the weights: multiply each row of A and the corresponding element in b(gridDesired) by sqrt(weight).
-            double sqrtW = (gridWeights[i] > 0.0) ? sqrt(gridWeights[i]) : 0.0;
-            for (uint j = 0; j < A[i].size(); j++) { A[i][j] *= sqrtW; }
-            b[i] *= sqrtW;
-        }
+        // Apply the weights: multiply each row of A and gridDesired by sqrt(weight)
+        arma::vec sqrtW = arma::sqrt(gridWeights);
+        A.each_col() %= sqrtW;
+        arma::vec d = gridDesired % sqrtW;
 
-        // Solve the weighted least squares problem A * x = b.
-        vector<double> x = utils::lstsq(A, b);
+        // Add the regularization parameter to avoid singular matrix.
+        A.diag() += 1e-12;
+
+        // Solve the weighted least-squares problem: A * x = d.
+        arma::vec x = arma::solve(A, d);
 
         // Compute the full symmetric FIR filter coefficients.
-        vector<double> bFull(numtaps, 0.0);
-        bFull[M] = x[0];
+        vector<double> b(numtaps, 0.0);
+        b[M] = x(0);
         for (uint k = 1; k <= M; k++) {
-            bFull[M - k] = x[k];
-            bFull[M + k] = x[k];
+            b[M - k] = x(k);
+            b[M + k] = x(k);
         }
-        return bFull;
+        return b;
     }
 
     vector<complex<double>> freqz(vector<double>& w, const vector<double>& b, uint worN, double fs) {
@@ -223,176 +122,5 @@ namespace dsp {
             for (uint n = 0; n < b.size(); n++) { h[i] += b[n] * exp(complex<double>(0, -omega * n)); }
         }
         return h;
-    }
-
-    vector<double> remez(
-        uint numtaps,
-        const vector<double>& bands,
-        const vector<double>& desired,
-        const vector<double>& weights,
-        double fs,
-        uint maxIter,
-        uint gridDensity
-    ) {
-        if (numtaps % 2 != 0) { throw invalid_argument("remez: Even number of taps required."); }
-
-        if (bands.size() % 2 != 0) { throw invalid_argument("remez: Bands vector must have an even number of elements."); }
-        for (uint i = 0; i < bands.size() - 1; i++) {
-            if (bands[i] >= bands[i + 1]) { throw invalid_argument("remez: Band edges must be strictly increasing."); }
-        }
-
-        uint numBands = bands.size() / 2;
-        if (desired.size() != numBands) { throw invalid_argument("remez: Desired vector must have length equal to half the number of band edges."); }
-
-        vector<double> weight;
-        if (weights.empty()) {
-            weight = vector<double>(numBands, 1.0);
-        }
-        else {
-            if (weights.size() != numBands) { throw invalid_argument("remez: Weight vector must have length equal to half the number of band edges."); }
-            weight = weights;
-        }
-
-        if (fs <= 0.0) { throw invalid_argument("remez: Sampling frequency must be positive."); }
-
-        // Normalize the band edges to [0, 1] (where 1 corresponds to Nyquist = fs / 2).
-        vector<double> normBands;
-        for (double b : bands) {
-            double normB = b / (fs / 2.0);
-            if (normB < 0 || normB > 1) { throw invalid_argument("remez: Band edges must lie between 0 and 1, relative to Nyquist."); }
-            normBands.push_back(normB);
-        }
-
-        // Compute a dense frequency grid along with desired response and weights.
-        vector<double> grid, gridDesired, gridWeight;
-        for (uint i = 0; i < normBands.size() / 2; i++) {
-            // Define start and stop frequency.
-            double fStart = normBands[2 * i];
-            double fStop = normBands[2 * i + 1];
-
-            // Compute number of grid points in the current band.
-            uint nPoints = max(int(ceil(gridDensity * numtaps * (fStop - fStart))), 2);
-
-            // Create linearly spaced values manually.
-            grid = utils::linspace(fStart, fStop, nPoints);
-
-            // Fill in the desired response and weight for this band.
-            gridDesired.insert(gridDesired.end(), nPoints, desired[i]);
-            gridWeight.insert(gridWeight.end(), nPoints, weight[i]);
-        }
-
-        // For a Type I filter, set M = (numtaps - 1) / 2.
-        uint M = numtaps / 2;
-
-        // Calculate the number of unknown variables
-        uint nUnknowns = M + 1;
-
-        // Calculate the number of extremums (at least as number of unknown libraries).
-        uint nExt = nUnknowns;
-
-        // Define extremal frequencies by selecting nExt equally spaced points from the grid.
-        vector<double> ext;
-        {
-            // Compute step in index-space.
-            double step = (grid.size() - 1) / nExt;
-            for (uint i = 0; i < nExt; i++) {
-                int idx = int(round(i * step));
-                ext.push_back(grid[idx]);
-            }
-        }
-
-        // Define vector for prototype coefficients.
-        vector<double> bProto(M, 0.0);
-
-        // Remez exchange iterations.
-        for (uint iter = 0; iter < maxIter; iter++) {
-            // Define the interpolation matrix A and right-hand side vector b.
-            vector<vector<double>> A(nExt, vector<double>(nUnknowns, 0.0));
-            vector<double> b(nExt, 0.0);
-
-            // Compute the interpolation matrix A and right-hand side vector b.
-            for (uint i = 0; i < nExt; i++) {
-                // Fill in cosine basis functions (scaled by 2) for each prototype coefficient.
-                double f = ext[i];
-                for (uint k = 0; k < M; k++) { A[i][k] = 2.0 * cos(M_PI * (k + 0.5) * f); }
-
-                // Locate the grid point closest to the current extremal frequency.
-                uint bestIdx = 0;
-                double bestDist = fabs(grid[0] - f);
-                for (uint j = 1; j < grid.size(); j++) {
-                    double dist = fabs(grid[j] - f);
-                    if (dist < bestDist) {
-                        bestDist = dist;
-                        bestIdx = j;
-                    }
-                }
-                // Set alternating error term for the Remez algorithm.
-                A[i][M] = ((i % 2) == 0 ? 1.0 : -1.0) / gridWeight[bestIdx];
-
-                // Set desired response at the extremal frequency.
-                b[i] = gridDesired[bestIdx];
-            }
-
-            // Solve the linear system A * x = b.
-            vector<double> x = utils::solve(A, b);
-
-            // Update prototype coefficients from the solution.
-            for (uint i = 0; i < M; i++) { bProto[i] = x[i]; }
-
-            // Evaluate the filter response over the entire frequency grid.
-            vector<double> Hgrid(grid.size(), 0.0);
-            for (uint j = 0; j < grid.size(); j++) {
-                double sum = 0.0;
-                for (uint k = 0; k < M; k++)
-                    sum += bProto[k] * cos(M_PI * (k + 0.5) * grid[j]);
-                Hgrid[j] = 2.0 * sum;
-            }
-
-            // Compute error and weighted error over the grid.
-            vector<double> error(grid.size(), 0.0);
-            vector<double> weightedError(grid.size(), 0.0);
-            for (uint j = 0; j < grid.size(); j++) {
-                error[j] = gridDesired[j] - Hgrid[j];
-                weightedError[j] = gridWeight[j] * error[j];
-            }
-
-            // Identify local extrema in the weighted error curve.
-            vector<uint> extIndices;
-            for (uint j = 1; j < grid.size() - 1; j++) {
-                if ((weightedError[j] >= weightedError[j - 1] && weightedError[j] >= weightedError[j + 1]) ||
-                    (weightedError[j] <= weightedError[j - 1] && weightedError[j] <= weightedError[j + 1])) {
-                    extIndices.push_back(j);
-                }
-            }
-            // Always include the endpoints.
-            if (extIndices.empty() || extIndices.front() != 0) { extIndices.insert(extIndices.begin(), 0); }
-            if (extIndices.back() != grid.size() - 1) { extIndices.push_back(grid.size() - 1); }
-
-            // Select nExt grid points with the largest absolute weighted error.
-            vector<pair<double, int>> errIndex;
-            for (uint idx : extIndices) { errIndex.push_back({fabs(weightedError[idx]), idx}); }
-            sort(errIndex.begin(), errIndex.end(), [](auto& a, auto& b) { return a.first > b.first; });
-
-            vector<uint> newExtIndices;
-            for (uint i = 0; i < nExt && i < errIndex.size(); i++) { newExtIndices.push_back(errIndex[i].second); }
-            sort(newExtIndices.begin(), newExtIndices.end());
-
-            vector<double> newExt;
-            for (int idx : newExtIndices) { newExt.push_back(grid[idx]); }
-
-             // Check for convergence: if the extremal frequencies haven't changed significantly, exit.
-            int converged = (newExt.size() == ext.size());
-            for (uint i = 0; i < newExt.size() && converged; i++) {
-                if (fabs(newExt[i] - ext[i]) > 1e-6) { converged = false; }
-            }
-            ext = newExt;
-            if (converged) { break; }
-        }
-
-        // Compute the full symmetric FIR filter coefficients.
-        vector<double> bFull(numtaps, 0.0);
-        for (uint i = 0; i < M; i++) { bFull[i] = bProto[M - 1 - i]; }
-        for (uint i = 0; i < M; i++) { bFull[M + i] = bProto[i]; }
-        return bFull;
     }
 }

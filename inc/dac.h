@@ -9,12 +9,12 @@
 
 class DAC {
     private:
-        InverseSinc inverseSinc;
+        InverseSinc * inverseSinc;
 
         std::vector<double> kernel(std::string mode, uint nNyquist);
     public:
-        DAC() {}
-        ~DAC() {}
+        DAC(uint nPoints = 8192) : inverseSinc(new InverseSinc(nPoints)) {}
+        ~DAC() { delete inverseSinc; }
 
         std::vector<double> operator()(
             const std::vector<double>& digital,

@@ -18,7 +18,7 @@ std::vector<double> DAC::operator()(
     // Filter the input signal with the sinc compensation filter, if necessary.
     vector<double> filteredDigital;
     if (mode == "NRZ") {
-        vector<double> b = inverseSinc(Fpass, errordB);
+        vector<double> b = (*inverseSinc)(Fpass, errordB);
         filteredDigital = dsp::lfilter(b, digital);
     }
     else { filteredDigital = digital; }
