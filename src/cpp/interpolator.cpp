@@ -16,9 +16,9 @@ vector<complex<double>> Interpolator::operator()(
     vector<complex<double>> output = input;
 
     // Propagate output signal through the interpolation 4 times.
-    for (int i = 1; i < N + 1  ; i++) {
+    for (int i = 1; i < nSteps + 1  ; i++) {
         // Upsample previous output signal by factor 2.
-        output = upsample(2, output);
+        output = upsample(output);
 
         // Compute FIR filter coefficients.
         int factor = pow(2, i);
@@ -45,11 +45,11 @@ vector<complex<double>> Interpolator::filter(const vector<double>& b, const vect
     return output;
 }
 
-vector<complex<double>> Interpolator::upsample(uint n, const vector<complex<double>>& input) {
+vector<complex<double>> Interpolator::upsample(const vector<complex<double>>& input) {
     // Define the output array.
-    vector<complex<double>> output(n * input.size(), {0.0, 0.0});
+    vector<complex<double>> output(2 * input.size(), {0.0, 0.0});
 
     // Upsample signal by adding n-1 zeros between every element.
-    for (uint i = 0; i < input.size(); i++) { output[i * n] = input[i]; }
+    for (uint i = 0; i < input.size(); i++) { output[2 * i] = input[i]; }
     return output;
 }
