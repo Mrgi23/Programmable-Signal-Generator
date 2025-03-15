@@ -71,7 +71,7 @@ make
     ```sh
     mkdir build && cd build
     cmake -G "Visual Studio 17 2022" ..
-    cmake --build . --config Release
+    cmake --build . --config
     ```
 - `MinGW-w64 (GCC)`:
     ```sh
@@ -101,18 +101,15 @@ pip install -r requirements.txt
 ### C++
 #### 1. Linux/macOS
 ```sh
-./build/signalGen.exe
+cd build
+./signalGen
 ```
 
 #### 2. Windows
-- `Microsoft Visual Studio (MSVC)`:
-    ```sh
-    build\Release\signalGen.exe
-    ```
-- `MinGW-w64 (GCC)`:
-    ```sh
-    build\signalGen.exe
-    ```
+```sh
+cd build
+.\signalGen.exe
+```
 
 ### Python
 #### 1. Linux/macOS

@@ -26,7 +26,7 @@ TEST_F(TestInterpolator, testInterpolator) {
     // Compute the result.
     vector<complex<double>> output = interpolator(120.0, fmax, fs, input);
     output = fft.fft(output);
-    uint N = static_cast<uint>(pow(2U, interpolator.getN()) * fs);
+    uint N = static_cast<uint>(pow(2U, interpolator.getNSteps()) * fs);
 
     // Test the result.
     ASSERT_EQ(output.size(), N) << "Invalid size of the interpolated signal.";
