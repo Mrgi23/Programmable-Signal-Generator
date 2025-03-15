@@ -38,6 +38,7 @@
 
 ### CI/CD Pipelines
 
+* Added automatic tag creation
 * Added custom Docker image
 * Added CI/CD pipeline
 
