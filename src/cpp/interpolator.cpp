@@ -16,7 +16,7 @@ vector<complex<double>> Interpolator::operator()(
     vector<complex<double>> output = input;
 
     // Propagate output signal through the interpolation 4 times.
-    for (int i = 1; i < nSteps + 1  ; i++) {
+    for (int i = 1; i < nSteps + 1; i++) {
         // Upsample previous output signal by factor 2.
         output = upsample(output);
 
