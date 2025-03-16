@@ -12,8 +12,9 @@ workflow:
 variables:
   ROOT_DIR: ${CI_PROJECT_DIR}
   BUILD_DIR: ${CI_PROJECT_DIR}/tests/build
-  COVERAGE_CPP_DIR: ${CI_PROJECT_DIR}/htmlcov/cpp
-  COVERAGE_PY_DIR: ${CI_PROJECT_DIR}/htmlcov/python
+  REPORT_DIR: ${CI_PROJECT_DIR}/reports
+  COVERAGE_CPP_DIR: ${REPORT_DIR}/htmlcov/cpp
+  COVERAGE_PY_DIR: ${REPORT_DIR}/htmlcov/python
   IMAGE_NAME: registry.gitlab.com/mrgi23/programmable-signal-generator/psg:latest
 
 setup_image:
@@ -118,8 +119,7 @@ pages:
   image: $IMAGE_NAME
   script:
     - mkdir -p public
-    - cp -r ${COVERAGE_CPP_DIR} public/cpp
-    - cp -r ${COVERAGE_PY_DIR} public/python
+    - cp -r ${REPORT_DIR}/. public
   artifacts:
     paths:
       - public
