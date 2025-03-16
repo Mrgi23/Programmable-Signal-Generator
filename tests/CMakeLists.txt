@@ -75,7 +75,7 @@ target_link_libraries(integrationTests armadillo gtest gtest_main gmock liquid p
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fprofile-instr-generate -fcoverage-mapping -O0")
 
 # Create report folder
-file(MAKE_DIRECTORY "${ROOT_DIR}/htmlcov/cpp")
+file(MAKE_DIRECTORY "${ROOT_DIR}/reports/htmlcov/cpp")
 
 # Make unit tests
 add_custom_target(
@@ -97,7 +97,7 @@ add_custom_target(
   COMMAND LLVM_PROFILE_FILE=coverageUnit.profraw "./unitTests"
   COMMAND LLVM_PROFILE_FILE=coverageIntegration.profraw "./integrationTests"
   COMMAND llvm-profdata merge -sparse coverageUnit.profraw coverageIntegration.profraw -o coverage.profdata
-  COMMAND llvm-cov export "./unitTests" "./integrationTests" -instr-profile=coverage.profdata -format=lcov --ignore-filename-regex=".*armadillo_bits/.*" > "${ROOT_DIR}/htmlcov/cpp/coverage.lcov"
-  COMMAND genhtml "${ROOT_DIR}/htmlcov/cpp/coverage.lcov" --output-directory "${ROOT_DIR}/htmlcov/cpp/"
+  COMMAND llvm-cov export "./unitTests" "./integrationTests" -instr-profile=coverage.profdata -format=lcov --ignore-filename-regex=".*armadillo_bits/.*" > "${ROOT_DIR}/reports/htmlcov/cpp/coverage.lcov"
+  COMMAND genhtml "${ROOT_DIR}/reports/htmlcov/cpp/coverage.lcov" --output-directory "${ROOT_DIR}/reports/htmlcov/cpp/"
   WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
 )
