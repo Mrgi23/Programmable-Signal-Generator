@@ -18,9 +18,14 @@ variables:
 
 setup_image:
   stage: setup
+  tags:
+    - arm
+    - raspberrypi
   image: docker:latest
   services:
     - docker:dind
+  variables:
+    DOCKER_TLS_CERTDIR: ""
   rules:
     - changes:
       - Dockerfile
@@ -33,6 +38,9 @@ setup_image:
 
 build_cpp:
   stage: build
+  tags:
+    - arm
+    - raspberrypi
   image: $IMAGE_NAME
   script:
     - mkdir -p ${BUILD_DIR}
@@ -46,6 +54,9 @@ build_cpp:
 
 test_cpp:
   stage: test
+  tags:
+    - arm
+    - raspberrypi
   image: $IMAGE_NAME
   script:
     - mkdir -p ${COVERAGE_CPP_DIR}
@@ -65,6 +76,9 @@ test_cpp:
 
 test_py:
   stage: test
+  tags:
+    - arm
+    - raspberrypi
   image: $IMAGE_NAME
   script:
     - mkdir -p ${COVERAGE_PY_DIR}
@@ -77,6 +91,9 @@ test_py:
 
 tags:
   stage: deploy
+  tags:
+    - arm
+    - raspberrypi
   image: $IMAGE_NAME
   script:
     - git config --global user.name "GitLab CI"
@@ -96,6 +113,9 @@ tags:
 
 pages:
   stage: deploy
+  tags:
+    - arm
+    - raspberrypi
   image: $IMAGE_NAME
   script:
     - mkdir -p public

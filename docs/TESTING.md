@@ -39,7 +39,7 @@ Ensure that all required dependencies are installed.
 ```sh
 sudo apt update && sudo apt install -y git cmake clang lld make python3.10 python3.10-venv llvm lcov liblapack-dev libopenblas-dev
 
-python3 -m venv .venv
+python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 ```
@@ -48,7 +48,7 @@ pip install -r requirements.txt
 ```sh
 brew install git cmake clang make python@3.10 llvm lcov lapack openblas
 
-python3 -m venv .venv
+python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 ```
