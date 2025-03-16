@@ -67,7 +67,7 @@ Unit testing ensures that individual components of the system function correctly
 mkdir -p tests/build && cd tests/build
 cmake ..
 make
-./unitTests
+make unit
 ```
 
 #### Python Tests
@@ -125,7 +125,7 @@ For **RF** mode, following the shift, the signal is converted to analog in a mod
 mkdir -p tests/build && cd tests/build
 cmake ..
 make
-./integrationTests
+make integration
 ```
 
 #### Python Tests
