@@ -1,50 +1,14 @@
-#include <algorithm>
-#include <armadillo>
 #include <cmath>
-#include <fstream>
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
-#include <sstream>
+#include "utils.h"
 #include "dsp.h"
 
 #define private public
 #include "signalGenerator.h"
 #undef private
 
-#include <iostream>
-#include <iomanip>
-
 using namespace std;
-
-
-void writeInFile(string path, vector<complex<double>> vec) {
-    ofstream outfile(path);
-    for (const auto &s : vec) {
-        outfile << s.real() << "," << s.imag() << "\n";
-    }
-}
-
-vector<complex<double>> getSignalFromFile(string path) {
-    vector<complex<double>> signal;
-
-    ifstream file(path);
-    string line;
-
-    while (getline(file, line)) {
-        istringstream iss(line);
-        double real, imag;
-        char comma;
-
-        iss >> real;
-        iss >> comma;
-        iss >> imag;
-
-        signal.push_back({real, imag});
-    }
-    return signal;
-}
-
-
 
 // Define the test object.
 class TestSignalGenerator : public ::testing::Test {
@@ -55,7 +19,7 @@ class TestSignalGenerator : public ::testing::Test {
 
 TEST_F(TestSignalGenerator, testSignalGenerator) {
     // Define the input.
-    uint M = pow(2U, signalGenerator.interpolator->getN());
+    uint M = pow(2U, signalGenerator.interpolator->getNSteps());
     double fs = 60.0;
     double fmin = 12.0;
     double fmax = 24.0;
@@ -63,7 +27,8 @@ TEST_F(TestSignalGenerator, testSignalGenerator) {
     double fshiftRF = 6 * fs * M / 8;
     uint nNyquist = 4;
 
-    vector<complex<double>> signal = getSignalFromFile("../../data/testsignal.txt");
+    vector<complex<double>> signal;
+    utils::readFile("../../data/testSignal.txt", signal);
     uint N = signal.size();
 
     // Compute the result.

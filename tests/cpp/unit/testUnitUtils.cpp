@@ -48,3 +48,39 @@ TEST(TestUtils, linspaceValidOutput) {
     ASSERT_EQ(vec.size(), num) << "Invalid size of the linear space.";
     for (uint i = 0; i < num; i++) { ASSERT_EQ(vec[i], vecExpected[i]) << "Invalid linear space value."; }
 }
+
+TEST(TestUtils, readFileValidOutput) {
+    // Define the input.
+    string path = "../../data/testSignal.txt";
+    vector<complex<double>> signal;
+
+    // Compute the result.
+    bool isRead = utils::readFile(path, signal);
+
+    // Test the result.
+    ASSERT_EQ(isRead, true) << "File was not read.";
+}
+
+TEST(TestUtils, readFileInvalidInput) {
+    // Define the input.
+    string path = "../../data/testSignalDummy.txt";
+    vector<complex<double>> signal;
+
+    // Compute the result.
+    bool isRead = utils::readFile(path, signal);
+
+    // Test the result.
+    ASSERT_EQ(isRead, false) << "Invalid file was read.";
+}
+
+TEST(TestUtils, writeFileValidOutput) {
+    // Define the input.
+    string path = "./testSignalDummy.txt";
+    vector<double> signal = {1.0, 2.0, 3.0};
+
+    // Compute the result.
+    bool isWritten = utils::writeFile(path, signal);
+
+    // Test the result.
+    ASSERT_EQ(isWritten, true) << "File was written to.";
+}

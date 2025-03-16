@@ -4,9 +4,9 @@ from complex_mixer import ComplexMixer
 from dac import DAC
 
 class SignalGenerator():
-    def __init__(self, N: int = 4, n_points: int = 8192, n_iter: int = 13, f_res: float = 1.0) -> None:
+    def __init__(self, n_steps: int = 4, n_points: int = 8192, n_iter: int = 13, f_res: float = 1.0) -> None:
         # Define the interpolator.
-        self.__interpolator = Interpolator(N, n_points)
+        self.__interpolator = Interpolator(n_steps, n_points)
 
         # Define the complex mixer.
         self.__complex_mixer = ComplexMixer(n_iter, f_res)
@@ -28,7 +28,7 @@ class SignalGenerator():
     ) -> np.ndarray:
         # Interpolate the input signal.
         interpolated = self.__interpolator(A_dB, f_max, fs, signal)
-        scale = len(interpolated) // len(signal)
+        scale = 2 ** self.__interpolator.n_steps
 
         # Shift the interpolated signal.
         I = interpolated.real
