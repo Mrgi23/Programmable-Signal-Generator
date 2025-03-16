@@ -15,7 +15,7 @@ To install dependencies and run the project, ensure you have the required tools 
 
 ### 1. Linux (Ubuntu/Debian)
 ```sh
-sudo apt update && sudo apt install -y git cmake g++ make python3.10 python3.10-venv
+sudo apt update && sudo apt install -y git cmake g++ make python3.10 python3.10-venv liblapack-dev libopenblas-dev
 ```
 For `clang` instead of `gcc`:
 ```sh

@@ -3,11 +3,11 @@
 using namespace std;
 
 SignalGenerator::SignalGenerator(
-    uint N,
+    uint nSteps,
     uint nPoints,
     uint nIter,
     double fres
-) : interpolator(new Interpolator(N, nPoints)), complexMixer(new ComplexMixer(nIter, fres)), dac(new DAC(nPoints)) {}
+) : interpolator(new Interpolator(nSteps, nPoints)), complexMixer(new ComplexMixer(nIter, fres)), dac(new DAC(nPoints)) {}
 
 SignalGenerator::~SignalGenerator() {
     delete interpolator;
@@ -28,7 +28,7 @@ vector<double> SignalGenerator::operator()(
 ) {
     // Interpolate the input signal.
     vector<complex<double>> interpolated = (*interpolator)(AdB, fmax, fs, signal);
-    uint scale = static_cast<uint>(interpolated.size() / signal.size());
+    uint scale = pow(2U, interpolator->getNSteps());
 
     // Shift the interpolated signal.
     vector<double> I(interpolated.size(), 0.0);

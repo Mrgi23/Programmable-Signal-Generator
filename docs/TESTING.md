@@ -37,7 +37,7 @@ Ensure that all required dependencies are installed.
 ### Installation
 #### 1. Linux/WSL
 ```sh
-sudo apt update && sudo apt install -y git cmake clang lld make python3.10 python3.10-venv llvm lcov
+sudo apt update && sudo apt install -y git cmake clang lld make python3.10 python3.10-venv llvm lcov liblapack-dev libopenblas-dev
 
 python3 -m venv .venv
 source .venv/bin/activate
@@ -67,7 +67,7 @@ Unit testing ensures that individual components of the system function correctly
 mkdir -p tests/build && cd tests/build
 cmake ..
 make
-./unitTests
+make unit
 ```
 
 #### Python Tests
@@ -125,7 +125,7 @@ For **RF** mode, following the shift, the signal is converted to analog in a mod
 mkdir -p tests/build && cd tests/build
 cmake ..
 make
-./integrationTests
+make integration
 ```
 
 #### Python Tests
