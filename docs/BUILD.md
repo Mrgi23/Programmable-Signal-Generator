@@ -85,14 +85,14 @@ Create and activate a virtual environment (optional), and install dependencies:
 
 #### 1. Linux/macOS
 ```sh
-python3 -m venv venv
+python -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
 ```
 
 #### 2. Windows
 ```sh
-python3 -m venv venv
+python -m venv venv
 source venv\Scripts\activate
 pip install -r requirements.txt
 ```
