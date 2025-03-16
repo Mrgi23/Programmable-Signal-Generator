@@ -23,13 +23,13 @@ sudo apt install -y clang lld
 ```
 
 ### 2. macOS (via Homebrew)
-```sh
-brew install git cmake make gcc python@3.10
-```
 To use `GNU Make` instead of `BSD Make`:
 ```sh
 alias make=gmake
-brew install make
+```
+
+```sh
+brew install git cmake make gcc python@3.10 lapack openblas
 ```
 
 ### 3. Windows
@@ -42,7 +42,7 @@ brew install make
     - `MinGW-w64 (GCC)`
         - Install via MSYS2:
             ```sh
-            pacman -S mingw-w64-x86_64-gcc mingw-w64-x86_64-make
+            pacman -S mingw-w64-x86_64-gcc mingw-w64-x86_64-make mingw-w64-x86_64-lapack mingw-w64-x86_64-openblas
             ```
         - Add `C:\msys64\mingw64\bin` to your system `PATH`
 - Install [Python3.10+](https://www.python.org/downloads/)
@@ -71,7 +71,7 @@ make
     ```sh
     mkdir build && cd build
     cmake -G "Visual Studio 17 2022" ..
-    cmake --build . --config Release
+    cmake --build . --config
     ```
 - `MinGW-w64 (GCC)`:
     ```sh
@@ -101,18 +101,15 @@ pip install -r requirements.txt
 ### C++
 #### 1. Linux/macOS
 ```sh
-./build/signalGen.exe
+cd build
+./signalGen
 ```
 
 #### 2. Windows
-- `Microsoft Visual Studio (MSVC)`:
-    ```sh
-    build\Release\signalGen.exe
-    ```
-- `MinGW-w64 (GCC)`:
-    ```sh
-    build\signalGen.exe
-    ```
+```sh
+cd build
+.\signalGen.exe
+```
 
 ### Python
 #### 1. Linux/macOS

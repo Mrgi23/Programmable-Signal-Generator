@@ -46,7 +46,7 @@ pip install -r requirements.txt
 
 #### 2. macOS
 ```sh
-brew install git cmake clang llvm make python@3.10 lcov
+brew install git cmake clang make python@3.10 llvm lcov lapack openblas
 
 python3 -m venv .venv
 source .venv/bin/activate
