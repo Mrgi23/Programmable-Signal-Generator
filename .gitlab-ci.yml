@@ -1,0 +1,195 @@
+stages:
+  - setup
+  - build
+  - test
+  - deploy
+
+workflow:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && ($CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "develop" || $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main")'
+    - if: '$CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH == "main"'
+
+variables:
+  ROOT_DIR: ${CI_PROJECT_DIR}
+  BUILD_DIR: ${CI_PROJECT_DIR}/tests/build
+  COVERAGE_CPP_DIR: ${CI_PROJECT_DIR}/htmlcov/cpp
+  COVERAGE_PY_DIR: ${CI_PROJECT_DIR}/htmlcov/python
+  IMAGE_NAME: registry.gitlab.com/mrgi23/programmable-signal-generator/psg:latest
+
+setup_image:
+  stage: setup
+  tags:
+    - arm
+    - raspberrypi
+  image: docker:latest
+  services:
+    - docker:dind
+  variables:
+    DOCKER_TLS_CERTDIR: ""
+  rules:
+    - changes:
+      - Dockerfile
+      - requirements.txt
+  script:
+    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY
+    - docker build -t psg:latest .
+    - docker tag psg:latest $IMAGE_NAME
+    - docker push $IMAGE_NAME
+
+build_cpp:
+  stage: build
+  tags:
+    - arm
+    - raspberrypi
+  image: $IMAGE_NAME
+  script:
+    - mkdir -p ${BUILD_DIR}
+    - cd ${BUILD_DIR}
+    - cmake ..
+    - cmake --build .
+  artifacts:
+    paths:
+      - ${BUILD_DIR}
+    expire_in: 1 hour
+
+test_cpp:
+  stage: test
+  tags:
+    - arm
+    - raspberrypi
+  image: $IMAGE_NAME
+  script:
+    - mkdir -p ${COVERAGE_CPP_DIR}
+    - cd ${BUILD_DIR}
+    - LLVM_PROFILE_FILE=coverageUnit.profraw ./unitTests
+    - LLVM_PROFILE_FILE=coverageIntegration.profraw ./integrationTests
+    - llvm-profdata merge -sparse coverageUnit.profraw coverageIntegration.profraw -o coverage.profdata
+    - llvm-cov export ./unitTests ./integrationTests -instr-profile=coverage.profdata --ignore-filename-regex=".*armadillo_bits/.*" -format=lcov > ${COVERAGE_CPP_DIR}/coverage.lcov
+    - llvm-cov report ./unitTests ./integrationTests -instr-profile=coverage.profdata --ignore-filename-regex=".*armadillo_bits/.*" > coverage.txt
+    - genhtml ${COVERAGE_CPP_DIR}/coverage.lcov --output-directory ${COVERAGE_CPP_DIR}/
+    - cat coverage.txt
+  coverage: '/TOTAL\s+\d+\s+\d+\s+\d+\.\d+%\s+\d+\s+\d+\s+\d+\.\d+%\s+\d+\s+\d+\s+(\d+\.\d+)%/'
+  artifacts:
+    paths:
+      - ${COVERAGE_CPP_DIR}
+    expire_in: 1 hour
+
+test_py:
+  stage: test
+  tags:
+    - arm
+    - raspberrypi
+  image: $IMAGE_NAME
+  script:
+    - mkdir -p ${COVERAGE_PY_DIR}
+    - PYTHONPATH=./src/python pytest --cov=./ --cov-report=term --cov-report=html:${COVERAGE_PY_DIR} tests/python | tee coverage.txt
+  coverage: '/TOTAL\s+\d+\s+\d+\s+(\d+(?:\.\d+)?)%/'
+  artifacts:
+    paths:
+      - ${COVERAGE_PY_DIR}
+    expire_in: 1 hour
+
+tags:
+  stage: deploy
+  tags:
+    - arm
+    - raspberrypi
+  image: $IMAGE_NAME
+  script:
+    - git config --global user.name "GitLab CI"
+    - git config --global user.email "gitlab-ci@example.com"
+    - git remote set-url origin https://Mrgi23:$GITLAB_TOKEN@$CI_SERVER_HOST/$CI_PROJECT_PATH.git
+    - VERSION=$(echo "$CI_COMMIT_MESSAGE" | grep -Eiom1 'Release v[0-9]+\.[0-9]+\.[0-9]+')
+    - |
+      if [ -n "$VERSION" ]; then
+        NEW_TAG=$(echo "$VERSION" | sed 's/Release //');
+        echo "Creating tag $NEW_TAG";
+        git tag -a "$NEW_TAG" -m "Automated release $NEW_TAG";
+        git push origin "$NEW_TAG";
+      fi
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
+pages:
+  stage: deploy
+  tags:
+    - arm
+    - raspberrypi
+  image: $IMAGE_NAME
+  script:
+    - mkdir -p public
+    - |
+      echo "<!DOCTYPE html>
+      <html lang='en'>
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Code Coverage Reports</title>
+        <style>
+          body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background: #383838; /* dark grey */
+            color: #f0f0f0; /* light text for contrast */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+          }
+          header {
+            background-color: #383838; /* even darker grey */
+            width: 100%;
+            padding: 20px;
+            text-align: center;
+            color: #4CAF50;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+          }
+          header h1 {
+            margin: 0;
+            font-size: 2.5em;
+          }
+          main {
+            background-color: #383838; /* a slightly lighter grey for contrast */
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+            width: 90%;
+            max-width: 600px;
+            margin-top: 40px;
+          }
+          /* List styling */
+          ul {
+            list-style: none;
+            padding: 0;
+          }
+          li {
+            margin: 15px 0;
+            font-size: 1.2em;
+          }
+          a {
+            text-decoration: none;
+            color: #4CAF50;
+            font-weight: bold;
+            transition: color 0.3s;
+          }
+          a:hover {
+            color: #80e27e;
+            text-decoration: underline;
+          }
+        </style>
+      </head>
+      <body>
+        <h1>Code Coverage Reports</h1>
+        <ul>
+          <li><a href='cpp/index.html'>C++ Coverage Report</a></li>
+          <li><a href='python/index.html'>Python Coverage Report</a></li>
+        </ul>
+      </body>
+      </html>" > public/index.html
+    - cp -r ${COVERAGE_CPP_DIR} public/cpp
+    - cp -r ${COVERAGE_PY_DIR} public/python
+  artifacts:
+    paths:
+      - public
+  only:
+    - main
