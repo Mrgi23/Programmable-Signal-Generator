@@ -15,14 +15,14 @@ def test_interpolator_valid_output(mocker, interpolator):
     input = np.cos(2 * np.pi * f_max * t)
 
     # Mock the HalfBand filter.
-    halfband_result = [np.array([1])] * interpolator.N
+    halfband_result = [np.array([1])] * interpolator.n_steps
     halfband_mock = mocker.Mock(side_effect=halfband_result)
     interpolator._Interpolator__halfband = halfband_mock
 
     # Compute the result.
     output = interpolator(120.0, f_max, fs, input)
     output = np.abs(np.fft.fft(output))
-    N = 2 ** interpolator.N
+    N = 2 ** interpolator.n_steps
 
     # Test the result.
     spec = []
