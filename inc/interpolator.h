@@ -9,7 +9,7 @@
 
 class Interpolator {
     private:
-        uint N;
+        uint nSteps;
         HalfBand * halfband;
 
         std::vector<std::complex<double>> filter(
@@ -17,14 +17,13 @@ class Interpolator {
             const std::vector<std::complex<double>>& input
         );
         std::vector<std::complex<double>> upsample(
-            uint n,
             const std::vector<std::complex<double>>& input
         );
     public:
-        Interpolator(uint N = 4, uint nPoints = 8192) : N(N), halfband(new HalfBand(nPoints)) {}
+        Interpolator(uint nSteps = 4, uint nPoints = 8192) : nSteps(nSteps), halfband(new HalfBand(nPoints)) {}
         ~Interpolator() { delete halfband; }
 
-        inline uint getN(void) { return N;}
+        inline uint getNSteps(void) { return nSteps;}
 
         std::vector<std::complex<double>> operator()(
             double AdB,

@@ -15,7 +15,7 @@ def test_interpolator():
     # Compute the result.
     output = interpolator(120.0, f_max, fs, input)
     output = np.abs(np.fft.fft(output))
-    N = 2 ** interpolator.N
+    N = 2 ** interpolator.n_steps
 
     # Test the result.
     assert(output.size == N * input.size), "Invalid size of the interpolated signal."
