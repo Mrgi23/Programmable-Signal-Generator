@@ -15,7 +15,7 @@ To install dependencies and run the project, ensure you have the required tools 
 
 ### 1. Linux (Ubuntu/Debian)
 ```sh
-sudo apt update && sudo apt install -y git cmake g++ make python3.10 python3.10-venv
+sudo apt update && sudo apt install -y git cmake g++ make python3.10 python3.10-venv liblapack-dev libopenblas-dev
 ```
 For `clang` instead of `gcc`:
 ```sh
@@ -71,7 +71,7 @@ make
     ```sh
     mkdir build && cd build
     cmake -G "Visual Studio 17 2022" ..
-    cmake --build . --config Release
+    cmake --build . --config
     ```
 - `MinGW-w64 (GCC)`:
     ```sh
@@ -85,14 +85,14 @@ Create and activate a virtual environment (optional), and install dependencies:
 
 #### 1. Linux/macOS
 ```sh
-python3 -m venv venv
+python -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
 ```
 
 #### 2. Windows
 ```sh
-python3 -m venv venv
+python -m venv venv
 source venv\Scripts\activate
 pip install -r requirements.txt
 ```
@@ -101,18 +101,15 @@ pip install -r requirements.txt
 ### C++
 #### 1. Linux/macOS
 ```sh
-./build/signalGen.exe
+cd build
+./signalGen
 ```
 
 #### 2. Windows
-- `Microsoft Visual Studio (MSVC)`:
-    ```sh
-    build\Release\signalGen.exe
-    ```
-- `MinGW-w64 (GCC)`:
-    ```sh
-    build\signalGen.exe
-    ```
+```sh
+cd build
+.\signalGen.exe
+```
 
 ### Python
 #### 1. Linux/macOS
