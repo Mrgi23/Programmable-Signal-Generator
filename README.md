@@ -18,7 +18,7 @@ The **Programmable Signal Generator** is a fully software-simulated system desig
 
 ## Authors and Acknowledgments
 ### Author
-- [**Aleksa Markovic**](https://gitlab.com/Mrgi23) – Creator & Maintainer
+- [**Aleksa Markovic**](https://gitlab.com/mrgi23) – Creator & Maintainer
 
 ### Acknowledgments
 Special thanks to
