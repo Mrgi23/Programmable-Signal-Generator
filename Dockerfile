@@ -4,10 +4,7 @@ FROM ubuntu:22.04
 # Set non-interactive mode for apt-get
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Update apt and install required packages:
-# - cmake, clang, llvm, ninja-build, git for building
-# - python3.10 and related packages for Python
-# - lcov for coverage tools
+# Update apt and install required packages
 RUN apt update && apt install -y \
     git \
     clang \
