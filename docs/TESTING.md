@@ -7,12 +7,10 @@ Testing strategies ensure the accuracy, reliability, and performance of the Prog
 ### C++ Testing
 - **Google Test (gtest), Google Mock (gmock)** – Testing framework for C++
 - **LLVM `llvm-cov`** – Code coverage analysis
-- **Valgrind** (optional) – Memory leak detection (Linux/macOS only)
 
 ### Python Testing
 - **pytest** – Testing framework for Python
 - **pytest-cov** – Code coverage analysis
-- **mypy** – Static type checking for Python
 
 ### Compatibility Notice
 For compatibility details, see the [Testing Framework Compatibility](COMPATIBILITY.md)
@@ -32,23 +30,22 @@ Ensure that all required dependencies are installed.
 ### Python Dependencies
 - **pytest** – Python unit testing framework
 - **pytest-cov** –  Python code coverage tool
-- **mypy** – Static type checking
 
 ### Installation
 #### 1. Linux/WSL
 ```sh
-sudo apt update && sudo apt install -y git cmake clang lld make python3.10 python3.10-venv llvm lcov
+sudo apt update && sudo apt install -y git cmake clang lld make python3.10 python3.10-venv llvm lcov liblapack-dev libopenblas-dev
 
-python3 -m venv .venv
+python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
 #### 2. macOS
 ```sh
-brew install git cmake clang llvm make python@3.10 lcov
+brew install git cmake clang make python@3.10 llvm lcov lapack openblas
 
-python3 -m venv .venv
+python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 ```
@@ -61,29 +58,6 @@ Unit testing ensures that individual components of the system function correctly
 - Verify **data processing functions and signal transformations**.
 - Verify **numerical stability, edge case handling, and computational performance**.
 
-###  Running Unit Tests
-#### C++ Tests
-```sh
-mkdir -p tests/build && cd tests/build
-cmake ..
-make
-./unitTests
-```
-
-#### Python Tests
-```sh
-source .venv/bin/activate
-PYTHONPATH=./src/python pytest tests/python/unit
-```
-
-### Test File Location
-| **Language**       | **Directory**    |
-|--------------------|------------------|
-| C++ Unit Tests     | `tests/cpp/unit`      |
-| Python Unit Tests  | `tests/python/unit`   |
-
-For detailed test cases, see the corresponding test files in `tests/<language>/unit`.
-
 ## Integration Testing
 Integration tests verify that the various components of the Programmable Signal Generator work together correctly. These tests ensure that data flows properly between modules, that signal transformations are performed as expected, and that the overall system produces the correct output when given a known input.
 
@@ -92,58 +66,35 @@ Integration tests verify that the various components of the Programmable Signal 
 - Ensure **complete processing chain produces the expected output**.
 - Assess **performance and robustness of the overall system when all components are integrated**.
 
-### Visual Overview of the Signal Processing Chain
-The following images illustrate the key steps in our Programmable Signal Generator’s signal processing pipeline. Each step transforms the signal toward its final analog output, with distinct processing for **NRZ (Non-Return-to-Zero)** and **RF (Bipolar Non-Return-to-Zero)** modes.
-
-#### 1. Input Signal:
-This image shows the raw digital input signal as captured by the **ADC**. It serves as the starting point for the processing chain.
-![Alt text](images/input.png)
-
-#### 2. Interpolated Signal:
-The input signal is upsampled (interpolated) to increase the resolution and smoothness of the spectrum. This step prepares the signal for accurate frequency shifting and further processing.
-![Alt text](images/interpolated.png)
-
-#### 3a. Shifted Signal (NRZ Mode):
-Using a **CORDIC algorithm**, the interpolated signal is frequency shifted into the **first Nyquist zone**. This placement is optimal for **NRZ** mode, ensuring that the signal's frequency components align with the **DAC**'s requirements for **NRZ** output.
-![Alt text](images/shifted_nrz.png)
-
-#### 3b. Shifted Signal (RF Mode):
-Similarly, the **CORDIC algorithm** shifts the interpolated signal into the **second Nyquist zone**. This mode-specific transformation prepares the signal for **RF** mode operation by positioning its frequency content in the zone most suitable for **RF** **DAC** processing.
-![Alt text](images/shifted_rf.png)
-
-#### 4a. Analog Signal Output (NRZ Mode):
-After shifting the signal is passed through an **inverse $sinc$ FIR filter** to counteract the distortion introduced by the **DAC**’s inherent $sinc$ response. This simulated **DAC** output provides the corrected analog spectrum for NRZ mode.
-![Alt text](images/analog_nrz.png)
-
-#### 4b. Analog Signal Output (RF Mode):
-For **RF** mode, following the shift, the signal is converted to analog in a mode optimized for **RF** applications. In this mode, the inherent **DAC** response is appropriate, so no additional filtering is applied, yielding a spectrum tailored for **RF** operation.
-![Alt text](images/analog_rf.png)
-
-###  Running Integration Tests
-#### C++ Tests
+##  Running Tests
+### C++ Tests
 ```sh
 mkdir -p tests/build && cd tests/build
 cmake ..
 make
-./integrationTests
+make unit # Unit Tests
+make integration # Integration Tests
 ```
 
-#### Python Tests
+### Python Tests
 ```sh
 source .venv/bin/activate
-PYTHONPATH=./src/python pytest tests/python/integration
+PYTHONPATH=./src/python pytest tests/python/unit # Unit Tests
+PYTHONPATH=./src/python pytest tests/python/integration # Integration Tests
 ```
 
 ### Test File Location
 | **Language**              | **Directory**              |
 |---------------------------|----------------------------|
+| C++ Unit Tests            | `tests/cpp/unit`           |
 | C++ Integration Tests     | `tests/cpp/integration`    |
+| Python Unit Tests         | `tests/python/unit`        |
 | Python Integration Tests  | `tests/python/integration` |
 
-For detailed test cases, see the corresponding test files in `tests/<language>/integration`.
+For detailed test cases, see the corresponding test files in `tests/<language>/<type>`.
 
 ## **Code Coverage**
-Code coverage ensures tests sufficiently exercise the codebase, identifying untested portions.
+Code coverage ensures tests sufficiently exercise the codebase, identifying tested portions.
 
 ### Generating Coverage Reports
 #### C++ Code Coverage
@@ -160,18 +111,18 @@ make coverage
 #### Python Code Coverage
 ```sh
 source .venv/bin/activate
-PYTHONPATH=./src/python pytest --cov=./ --cov-report=html:htmlcov/python tests/python
+PYTHONPATH=./src/python pytest --cov=./ --cov-report=html:reports/htmlcov/python tests/python
 ```
 
 ### Coverage Report Locations
-| **Language**       | **Directory**    |
-|--------------------|------------------|
-| C++ Unit Tests     | `htmlcov/cpp`      |
-| Python Unit Tests  | `htmlcov/python`   |
+| **Language**       | **Directory**            |
+|--------------------|--------------------------|
+| C++ Unit Tests     | `reports/htmlcov/cpp`    |
+| Python Unit Tests  | `reports/htmlcov/python` |
 
 To view coverage report:
 ```sh
-firefox directory/index.html
+firefox <directory>/index.html
 ```
 
 ## CI/CD Integration
@@ -184,11 +135,12 @@ The pipeline is structured into the following stages:
 | **Setup**    | Builds and pushes a custom Docker image with all dependencies pre-installed (`cmake`, `clang`, `llvm`, `python3.10`, `googletest`, `googlemock`, `pytest`, etc.) |
 | **Build**    | Compiles C++ tests |
 | **Test**     | Runs both C++ (Google Test) and Python (pytest) tests, and generates coverage reports using `llvm-cov` and `pytest-cov` |
-| **Deploy**   | Publishes coverage reports via **GitLab Pages** |
+| **Deploy**   | Creates new tag based on the release version and publishes reports via **GitLab Pages** (only `main`) |
 
 ### When Does CI/CD Run?
 The CI/CD pipeline is triggered in the following cases:
-- On every commit and merge request to `develop` or `main` branches
+- On every merge request to `develop` branch
+- On every merge commit to `main` branch
 - On manual pipeline execution from **GitLab UI**
 
 **The pipeline is blocked if tests fail**, ensuring only validated code is merged.
@@ -198,6 +150,7 @@ The CI/CD pipeline is triggered in the following cases:
 
 ### GitLab Pages (Published Reports)
 Deployed via GitLab Pages, coverage reports are accessible at:
+- [Programmable Signal Generator's Processing Pipeline](https://mrgi23.gitlab.io/programmable-signal-generator/index.html)
 - [C++ Code Coverage Report](https://mrgi23.gitlab.io/programmable-signal-generator/cpp/index.html)
 - [Python Code Coverage Report](https://mrgi23.gitlab.io/programmable-signal-generator/python/index.html)
 

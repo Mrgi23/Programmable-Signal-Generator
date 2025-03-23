@@ -5,7 +5,7 @@ from signal_generator import SignalGenerator
 def test_signal_generator():
     # Define the test object.
     signal_generator = SignalGenerator()
-    M = 2 ** signal_generator._SignalGenerator__interpolator.N
+    M = 2 ** signal_generator._SignalGenerator__interpolator.n_steps
 
     # Define the input.
     fs = 60
@@ -15,7 +15,7 @@ def test_signal_generator():
     f_shift_rf = 6 / 8 * fs * M
     n_nyquist = 4
 
-    data = np.loadtxt("./data/testsignal.txt", delimiter=",")
+    data = np.loadtxt("./data/testSignal.txt", delimiter=",")
     signal = data[:, 0] + 1j * data[:, 1]
     N = signal.size
 
