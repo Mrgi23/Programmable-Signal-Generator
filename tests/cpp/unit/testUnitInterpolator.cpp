@@ -47,7 +47,7 @@ TEST_F(TestInterpolator, validOutput) {
     // Compute the result.
     vector<complex<double>> output = interpolator(120.0, fmax, fs, input);
     output = fft.fft(output);
-    uint N = static_cast<uint>(pow(2U, interpolator.getN()) * fs);
+    uint N = static_cast<uint>(pow(2U, interpolator.nSteps) * fs);
 
     // Test the result.
     vector<uint> spec;
