@@ -16,7 +16,7 @@ class SignalGenerator {
         ComplexMixer * complexMixer;
         DAC * dac;
     public:
-        SignalGenerator(uint N = 4, uint nPoints = 8192, uint nIter = 13, double fres = 1.0);
+        SignalGenerator(uint nSteps = 4, uint nPoints = 8192, uint nIter = 13, double fres = 1.0);
         ~SignalGenerator();
 
         std::vector<double> operator()(
