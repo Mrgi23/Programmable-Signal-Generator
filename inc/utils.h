@@ -3,6 +3,8 @@
 
 #ifdef __cplusplus
 
+#include <complex>
+#include <string>
 #include <vector>
 
 namespace utils {
@@ -24,7 +26,9 @@ namespace utils {
         T step = endpoint ? (end - start) / static_cast<T>(num - 1) : (end - start) / static_cast<T>(num);
         for (uint i = 0; i < num; i++) { vec.push_back(start + i * step); }
         return vec;
-    }
+    };
+    bool readFile(std::string path, std::vector<std::complex<double>>& signal);
+    bool writeFile(std::string path, const std::vector<double>& signal);
 }
 
 #endif
