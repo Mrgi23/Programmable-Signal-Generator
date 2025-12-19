@@ -1,0 +1,18 @@
+comment:
+  layout: "diff, flags"
+  behavior: default
+
+coverage:
+  status:
+    patch:
+      cpp:
+        flags:
+          - cpp
+        target: 100%
+        threshold: 0%
+
+      python:
+        flags:
+          - python
+        target: 100%
+        threshold: 0%
