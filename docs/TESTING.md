@@ -126,16 +126,16 @@ firefox <directory>/index.html
 ```
 
 ## CI/CD Integration
-The testing framework is integrated with **GitLab CI/CD**, ensuring automated testing and coverage reporting on every merge request.
+The testing framework is integrated with **GitHub Actions**, providing automated testing, coverage reporting, tagging, and report publishing.
 
 ### CI/CD Pipeline Overview
 The pipeline is structured into the following stages:
 | **Stage**    | **Purpose** |
 |--------------|-------------|
-| **Setup**    | Builds and pushes a custom Docker image with all dependencies pre-installed (`cmake`, `clang`, `llvm`, `python3.10`, `googletest`, `googlemock`, `pytest`, etc.) |
-| **Build**    | Compiles C++ tests |
-| **Test**     | Runs both C++ (Google Test) and Python (pytest) tests, and generates coverage reports using `llvm-cov` and `pytest-cov` |
-| **Deploy**   | Creates new tag based on the release version and publishes reports via **GitLab Pages** (only `main`) |
+| **Setup** | Prepares the build environment using reusable composite actions to install required system and language toolchains (C++, Python) |
+| **Build & Test (C++)** | Builds C++ test binaries using `cmake` and `clang`, executes Google Test–based tests, and generates coverage reports using `llvm-cov` |
+| **Test (Python)** | Runs Python tests using `pytest`, generates coverage using `pytest-cov`, and exports both HTML and XML reports |
+| **Deploy** | Creates Git tags based on the release version and publishes coverage reports via **GitHub Pages** (only on `main`) |
 
 ### When Does CI/CD Run?
 The CI/CD pipeline is triggered in the following cases:
@@ -146,13 +146,13 @@ The CI/CD pipeline is triggered in the following cases:
 **The pipeline is blocked if tests fail**, ensuring only validated code is merged.
 
 ### GitLab CI/CD Coverage Badge
-![Coverage](https://gitlab.com/mrgi23/programmable-signal-generator/badges/main/coverage.svg)
+![Coverage](https://codecov.io/gh/Mrgi23/Programmable-Signal-Generator/branch/main/graph/badge.svg)
 
 ### GitLab Pages (Published Reports)
-Deployed via GitLab Pages, coverage reports are accessible at:
-- [Programmable Signal Generator's Processing Pipeline](https://mrgi23.gitlab.io/programmable-signal-generator/index.html)
-- [C++ Code Coverage Report](https://mrgi23.gitlab.io/programmable-signal-generator/cpp/index.html)
-- [Python Code Coverage Report](https://mrgi23.gitlab.io/programmable-signal-generator/python/index.html)
+Deployed via **GitHub Pages**, coverage reports are accessible at:
+- [Programmable Signal Generator's Processing Pipeline](https://mrgi23.github.io/Programmable-Signal-Generator/)
+- [C++ Code Coverage Report](https://mrgi23.github.io/Programmable-Signal-Generator/htmlcov/cpp/)
+- [Python Code Coverage Report](https://mrgi23.github.io/Programmable-Signal-Generator/htmlcov/python/)
 
 
 ## Next Steps
