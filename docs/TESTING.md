@@ -6,7 +6,7 @@ Testing strategies ensure the accuracy, reliability, and performance of the Prog
 ## Testing Frameworks
 ### C++ Testing
 - **Google Test (gtest), Google Mock (gmock)** – Testing framework for C++
-- **LLVM `llvm-cov`** – Code coverage analysis
+- **`lcov`** – Code coverage analysis
 
 ### Python Testing
 - **pytest** – Testing framework for Python
@@ -20,12 +20,12 @@ Ensure that all required dependencies are installed.
 
 ### C++ Dependencies
 - **CMake** – Build system for compiling tests
-- **LLVM (`llvm-cov`)** – Required for C++ code coverage (**Only works with Clang**)
+- **`lcov`** – Required for C++ code coverage (**Only works with GCC**)
 - **Make or Ninja** – For compiling tests
 
-**C++ code coverage is only supported with Clang**
-- If using **GCC or MSVC**, code coverage will not be available.
-- Windows users must run tests inside **WSL with Clang/LLVM**.
+**C++ code coverage is only supported with GCC**
+- If using **Clang or MSVC**, code coverage will not be available.
+- Windows users must run tests inside **WSL with GCC/`lcov`**.
 
 ### Python Dependencies
 - **pytest** – Python unit testing framework
@@ -34,7 +34,7 @@ Ensure that all required dependencies are installed.
 ### Installation
 #### 1. Linux/WSL
 ```sh
-sudo apt update && sudo apt install -y git cmake clang lld make python3.10 python3.10-venv llvm lcov liblapack-dev libopenblas-dev
+sudo apt update && sudo apt install -y git cmake gcc lcov make python3.12 python3.12-venv lcov liblapack-dev libopenblas-dev
 
 python -m venv .venv
 source .venv/bin/activate
@@ -43,7 +43,7 @@ pip install -r requirements.txt
 
 #### 2. macOS
 ```sh
-brew install git cmake clang make python@3.10 llvm lcov lapack openblas
+brew install git cmake gcc make python@3.12 lcov lapack openblas
 
 python -m venv .venv
 source .venv/bin/activate
@@ -98,10 +98,10 @@ Code coverage ensures tests sufficiently exercise the codebase, identifying test
 
 ### Generating Coverage Reports
 #### C++ Code Coverage
-C++ code coverage is generated using **LLVM's `llvm-cov`**, which only works with **Clang**.
+C++ code coverage is generated using **`lcov`**, which only works with **GCC**.
 **MSVC and MinGW are not supported for code coverage.**
-- Linux/macOS: **Native support with Clang**
-- Windows: **Must use WSL with Clang/LLVM**
+- Linux/macOS: **Native support with GCC**
+- Windows: **Must use WSL with GCC**
 ```sh
 mkdir -p tests/build && cd tests/build
 cmake ..
@@ -126,16 +126,16 @@ firefox <directory>/index.html
 ```
 
 ## CI/CD Integration
-The testing framework is integrated with **GitLab CI/CD**, ensuring automated testing and coverage reporting on every merge request.
+The testing framework is integrated with **GitHub Actions**, providing automated testing, coverage reporting, tagging, and report publishing.
 
 ### CI/CD Pipeline Overview
 The pipeline is structured into the following stages:
 | **Stage**    | **Purpose** |
 |--------------|-------------|
-| **Setup**    | Builds and pushes a custom Docker image with all dependencies pre-installed (`cmake`, `clang`, `llvm`, `python3.10`, `googletest`, `googlemock`, `pytest`, etc.) |
-| **Build**    | Compiles C++ tests |
-| **Test**     | Runs both C++ (Google Test) and Python (pytest) tests, and generates coverage reports using `llvm-cov` and `pytest-cov` |
-| **Deploy**   | Creates new tag based on the release version and publishes reports via **GitLab Pages** (only `main`) |
+| **Setup** | Prepares the build environment using reusable composite actions to install required system and language toolchains (C++, Python) |
+| **Build & Test (C++)** | Builds C++ test binaries using `cmake` and `gcc`, executes Google Test–based tests, and generates coverage reports using `lcov` |
+| **Test (Python)** | Runs Python tests using `pytest`, generates coverage using `pytest-cov`, and exports both HTML and XML reports |
+| **Deploy** | Creates Git tags based on the release version and publishes coverage reports via **GitHub Pages** (only on `main`) |
 
 ### When Does CI/CD Run?
 The CI/CD pipeline is triggered in the following cases:
@@ -146,13 +146,13 @@ The CI/CD pipeline is triggered in the following cases:
 **The pipeline is blocked if tests fail**, ensuring only validated code is merged.
 
 ### GitLab CI/CD Coverage Badge
-![Coverage](https://gitlab.com/mrgi23/programmable-signal-generator/badges/main/coverage.svg)
+![Coverage](https://codecov.io/gh/Mrgi23/Programmable-Signal-Generator/branch/main/graph/badge.svg)
 
 ### GitLab Pages (Published Reports)
-Deployed via GitLab Pages, coverage reports are accessible at:
-- [Programmable Signal Generator's Processing Pipeline](https://mrgi23.gitlab.io/programmable-signal-generator/index.html)
-- [C++ Code Coverage Report](https://mrgi23.gitlab.io/programmable-signal-generator/cpp/index.html)
-- [Python Code Coverage Report](https://mrgi23.gitlab.io/programmable-signal-generator/python/index.html)
+Deployed via **GitHub Pages**, coverage reports are accessible at:
+- [Programmable Signal Generator's Processing Pipeline](https://mrgi23.github.io/Programmable-Signal-Generator/)
+- [C++ Code Coverage Report](https://mrgi23.github.io/Programmable-Signal-Generator/htmlcov/cpp/)
+- [Python Code Coverage Report](https://mrgi23.github.io/Programmable-Signal-Generator/htmlcov/python/)
 
 
 ## Next Steps
