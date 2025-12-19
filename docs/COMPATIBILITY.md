@@ -11,7 +11,6 @@
 
 ### Not Supported
 - **Native Windows (MSVC, MinGW)**
-  - `llvm-cov` does not work natively on Windows.
   - Google Test (`gtest`) requires manual setup on naitve Windows.
   - Profiling tools like (`Valgrind`) are not available on Windows.
 
