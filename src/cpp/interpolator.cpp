@@ -28,8 +28,7 @@ vector<complex<double>> Interpolator::operator()(
         // Filter the upsampled signal.
         output = filter(b, output);
     }
-    return output;
-}
+    return output; } // operator()
 
 vector<complex<double>> Interpolator::filter(const vector<double>& b, const vector<complex<double>>& input) {
     // Prepare signal for filtering by expanding its size for len(b) elements.
@@ -42,8 +41,7 @@ vector<complex<double>> Interpolator::filter(const vector<double>& b, const vect
 
     // Remove additional elements of the signal.
     output.erase(output.begin(), output.begin() + b.size());
-    return output;
-}
+    return output; } // filter
 
 vector<complex<double>> Interpolator::upsample(const vector<complex<double>>& input) {
     // Define the output array.
