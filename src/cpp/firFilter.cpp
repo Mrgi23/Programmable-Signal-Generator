@@ -1,6 +1,6 @@
 #include <cmath>
 #include <complex>
-#include <liquid.h>
+#include <liquid/liquid.h>
 #include <stdexcept>
 #include "utils.h"
 #include "dsp.h"

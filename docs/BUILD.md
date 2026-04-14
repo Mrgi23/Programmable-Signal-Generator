@@ -3,6 +3,7 @@
 ## General Requirements (All Platforms)
 - **Git** - For cloning the repository
 - **CMake (≥ 3.10)** - For configuring the C++ build
+- **Conan (≥ 2.1)** - For configuring build dependencies
 - **C++ Compiler supporting C++20**
     - **Linux:** `g++ (≥ 10)` or `clang++ (≥ 11)`
     - **macOS:** `clang++` (via Xcode command-line tools) or install `g++` via Homebrew
@@ -15,7 +16,12 @@ To install dependencies and run the project, ensure you have the required tools 
 
 ### 1. Linux (Ubuntu/Debian)
 ```sh
-sudo apt update && sudo apt install -y git cmake g++ make python3.10 python3.10-venv liblapack-dev libopenblas-dev
+sudo apt update && sudo apt install -y git cmake gcc g++ liblapack-dev libopenblas-dev make pipx python3.12 python3.12-venv
+sudo pipx ensure path
+
+sudo pipx install conan
+conan remote add conancenter https://center2.conan.io
+conan remote add artifactory https://conan.mrgi23.com/artifactory/api/conan/Conan-Index
 ```
 For `clang` instead of `gcc`:
 ```sh
@@ -29,7 +35,10 @@ alias make=gmake
 ```
 
 ```sh
-brew install git cmake make gcc python@3.10 lapack openblas
+brew install git cmake conan make gcc python@3.10 lapack openblas
+
+conan remote add conancenter https://center2.conan.io
+conan remote add artifactory https://conan.mrgi23.com/artifactory/api/conan/Conan-Index
 ```
 
 ### 3. Windows
@@ -61,23 +70,23 @@ Create a build/ directory, generate Makefiles with CMake, and compile:
 
 #### 1. Linux/macOS
 ```sh
-mkdir -p build && cd build
-cmake ..
-make
+conan install . --build=missing
+cmake --preset conan-release
+cmake --build --preset conan-release
 ```
 
 #### 2. Windows
 - `Microsoft Visual Studio (MSVC)`:
     ```sh
-    mkdir build && cd build
-    cmake -G "Visual Studio 17 2022" ..
-    cmake --build . --config
+    conan install . --build=missing
+    cmake -G "Visual Studio 17 2022" --preset conan-release
+    cmake --build --preset conan-release
     ```
 - `MinGW-w64 (GCC)`:
     ```sh
-    mkdir build && cd build
-    cmake -G "MinGW Makefiles" ..
-    mingw32-make
+    conan install . --build=missing
+    cmake -G "MinGW Makefiles" --preset conan-release
+    cmake --build --preset conan-release
     ```
 
 ### Setup for Python
@@ -102,13 +111,13 @@ pip install -r requirements.txt
 #### 1. Linux/macOS
 ```sh
 cd build
-./signalGen
+./Release/signalGen
 ```
 
 #### 2. Windows
 ```sh
 cd build
-.\signalGen.exe
+.\Release\signalGen.exe
 ```
 
 ### Python

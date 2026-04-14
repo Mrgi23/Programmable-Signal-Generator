@@ -1,0 +1,11 @@
+[requires]
+armadillo/14.0.2@mrgi/release
+gtest/1.17.0
+liquid-dsp/1.7.0@mrgi/release
+
+[generators]
+CMakeDeps
+CMakeToolchain
+
+[layout]
+cmake_layout

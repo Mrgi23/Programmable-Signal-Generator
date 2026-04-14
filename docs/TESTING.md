@@ -20,6 +20,7 @@ Ensure that all required dependencies are installed.
 
 ### C++ Dependencies
 - **CMake** – Build system for compiling tests
+- **Conan** - System for compiling dependencies
 - **`lcov`** – Required for C++ code coverage (**Only works with GCC**)
 - **Make or Ninja** – For compiling tests
 
@@ -34,7 +35,12 @@ Ensure that all required dependencies are installed.
 ### Installation
 #### 1. Linux/WSL
 ```sh
-sudo apt update && sudo apt install -y git cmake gcc lcov make python3.12 python3.12-venv lcov liblapack-dev libopenblas-dev
+sudo apt update && sudo apt install -y git cmake gcc g++ lcov liblapack-dev libopenblas-dev make pipx python3.12 python3.12-venv
+sudo pipx ensure path
+
+sudo pipx install conan
+conan remote add conancenter https://center2.conan.io
+conan remote add artifactory https://conan.mrgi23.com/artifactory/api/conan/Conan-Index
 
 python -m venv .venv
 source .venv/bin/activate
@@ -43,7 +49,10 @@ pip install -r requirements.txt
 
 #### 2. macOS
 ```sh
-brew install git cmake gcc make python@3.12 lcov lapack openblas
+brew install cmake conan git gcc lcov lapack make openblas python@3.12
+
+conan remote add conancenter https://center2.conan.io
+conan remote add artifactory https://conan.mrgi23.com/artifactory/api/conan/Conan-Index
 
 python -m venv .venv
 source .venv/bin/activate
@@ -69,9 +78,11 @@ Integration tests verify that the various components of the Programmable Signal 
 ##  Running Tests
 ### C++ Tests
 ```sh
-mkdir -p tests/build && cd tests/build
-cmake ..
-make
+cd tests
+conan install . --build=missing
+cmake --preset conan-release
+cmake --build --preset conan-release
+cd build/Release
 make unit # Unit Tests
 make integration # Integration Tests
 ```
@@ -103,9 +114,11 @@ C++ code coverage is generated using **`lcov`**, which only works with **GCC**.
 - Linux/macOS: **Native support with GCC**
 - Windows: **Must use WSL with GCC**
 ```sh
-mkdir -p tests/build && cd tests/build
-cmake ..
-make
+cd tests
+conan install . --build=missing
+cmake --preset conan-release
+cmake --build --preset conan-release
+cd build/Release
 make coverage
 ```
 #### Python Code Coverage
