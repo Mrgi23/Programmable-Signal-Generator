@@ -1,20 +1,14 @@
-#ifndef DAC_H
-#define DAC_H
+#pragma once
 
-#ifdef __cplusplus
-
-#include <string>
-#include <vector>
+#include "types.h"
 #include "firFilter.h"
+#include <string>
 
-class DAC {
-    private:
-        InverseSinc * inverseSinc;
-
-        std::vector<double> kernel(std::string mode, uint nNyquist);
+class DAC
+{
     public:
-        DAC(uint nPoints = 8192) : inverseSinc(new InverseSinc(nPoints)) {}
-        ~DAC() { delete inverseSinc; }
+        DAC(uint nPoints = 8192);
+        ~DAC();
 
         std::vector<double> operator()(
             const std::vector<double>& digital,
@@ -23,8 +17,8 @@ class DAC {
             double Fpass = 0.4,
             double errordB = 0.025
         );
+    private:
+        std::vector<double> kernel(std::string mode, uint nNyquist);
+
+        InverseSinc * inverseSinc;
 };
-
-#endif
-
-#endif

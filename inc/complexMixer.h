@@ -1,17 +1,17 @@
-#ifndef COMPLEX_MIXER_H
-#define COMPLEX_MIXER_H
+#pragma once
 
-#ifdef __cplusplus
-
+#include "types.h"
 #include <complex>
 #include <vector>
 
-class ComplexMixer {
-    private:
-        uint nIter;
-        double fres;
-        std::vector<std::complex<double>> factors;
+class ComplexMixer
+{
+    public:
+        ComplexMixer(uint nIter = 13, double fres = 1.0);
+        ~ComplexMixer();
 
+        std::vector<double> operator()(double fshift, double fs, const std::vector<double>& I, const std::vector<double>& Q);
+    private:
         std::vector<double> CORDIC(
             uint Wmax,
             const std::vector<double>& Z,
@@ -19,18 +19,8 @@ class ComplexMixer {
             const std::vector<double>& Q
         );
         std::vector<double> NCO(double W, uint Wmax, uint nPoints);
-    public:
-        ComplexMixer(uint nIter = 13, double fres = 1.0);
-        ~ComplexMixer() {}
 
-        std::vector<double> operator()(
-            double fshift,
-            double fs,
-            const std::vector<double>& I,
-            const std::vector<double>& Q
-        );
+        uint nIter;
+        double fres;
+        std::vector<std::complex<double>> factors;
 };
-
-#endif
-
-#endif

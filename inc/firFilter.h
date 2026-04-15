@@ -1,34 +1,31 @@
-#ifndef FIR_FILTER_H
-#define FIR_FILTER_H
+#pragma once
 
-#ifdef __cplusplus
-
+#include "types.h"
 #include <vector>
 
-class FIR {
+class FIR
+{
+    public:
+        FIR(uint nPoints = 8192);
+        virtual ~FIR();
     protected:
         int nPoints;
-    public:
-        FIR(uint nPoints = 8192) : nPoints(nPoints) {}
-        virtual ~FIR() {}
 };
 
-class InverseSinc : public FIR {
+class InverseSinc : public FIR
+{
     public:
-        InverseSinc(uint nPoints = 8192) : FIR(nPoints) {}
-        ~InverseSinc() override {}
+        InverseSinc(uint nPoints = 8192);
+        ~InverseSinc() override;
 
         virtual std::vector<double> operator()(double Fpass, double errordB, uint nSpec = 16);
 };
 
-class HalfBand : public FIR {
+class HalfBand : public FIR
+{
     public:
-        HalfBand(uint nPoints = 8192) : FIR(nPoints) {}
-        ~HalfBand() override {}
+        HalfBand(uint nPoints = 8192);
+        ~HalfBand() override;
 
         virtual std::vector<double> operator()(double AdB, double Fpass);
 };
-
-#endif
-
-#endif

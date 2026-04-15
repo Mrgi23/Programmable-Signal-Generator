@@ -25,21 +25,20 @@ vector<double> SignalGenerator::operator()(
     uint nNyquist,
     double Fpass,
     double errordB
-) {
-    // Interpolate the input signal.
+)
+{
     vector<complex<double>> interpolated = (*interpolator)(AdB, fmax, fs, signal);
     uint scale = pow(2U, interpolator->getNSteps());
 
-    // Shift the interpolated signal.
     vector<double> I(interpolated.size(), 0.0);
     vector<double> Q(interpolated.size(), 0.0);
-    for (uint i  = 0; i < interpolated.size(); i++) {
+    for (uint i  = 0; i < interpolated.size(); i++)
+    {
         I[i] = interpolated[i].real();
         Q[i] = interpolated[i].imag();
     }
-    vector<double> shifted = (*complexMixer)(fshift, scale * fs, I, Q);
 
-    // Convert the digital signal to analog.
+    vector<double> shifted = (*complexMixer)(fshift, scale * fs, I, Q);
     vector<double> analog = (*dac)(shifted, mode, nNyquist, Fpass, errordB);
     return analog;
 }

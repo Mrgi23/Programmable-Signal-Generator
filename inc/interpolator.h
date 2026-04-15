@@ -1,29 +1,15 @@
-#ifndef INTERPOLATOR_H
-#define INTERPOLATOR_H
+#pragma once
 
-#ifdef __cplusplus
-
-#include <complex>
-#include <vector>
+#include "types.h"
 #include "firFilter.h"
+#include <complex>
 
 class Interpolator {
-    private:
-        uint nSteps;
-        HalfBand * halfband;
-
-        std::vector<std::complex<double>> filter(
-            const std::vector<double>& b,
-            const std::vector<std::complex<double>>& input
-        );
-        std::vector<std::complex<double>> upsample(
-            const std::vector<std::complex<double>>& input
-        );
     public:
-        Interpolator(uint nSteps = 4, uint nPoints = 8192) : nSteps(nSteps), halfband(new HalfBand(nPoints)) {}
-        ~Interpolator() { delete halfband; }
+        Interpolator(uint nSteps = 4, uint nPoints = 8192);
+        ~Interpolator();
 
-        inline uint getNSteps(void) { return nSteps;}
+        uint getNSteps(void);
 
         std::vector<std::complex<double>> operator()(
             double AdB,
@@ -31,8 +17,15 @@ class Interpolator {
             double fs,
             const std::vector<std::complex<double>>& input
         );
+    private:
+        std::vector<std::complex<double>> filter(
+            const std::vector<double>& b,
+            const std::vector<std::complex<double>>& input
+        );
+        std::vector<std::complex<double>> upsample(
+            const std::vector<std::complex<double>>& input
+        );
+
+        uint nSteps;
+        HalfBand * halfband;
 };
-
-#endif
-
-#endif
