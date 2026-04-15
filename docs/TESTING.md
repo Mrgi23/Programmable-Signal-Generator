@@ -19,23 +19,22 @@ For compatibility details, see the [Testing Framework Compatibility](COMPATIBILI
 Ensure that all required dependencies are installed.
 
 ### C++ Dependencies
-- **CMake** – Build system for compiling tests
 - **Conan** - System for compiling dependencies
-- **`lcov`** – Required for C++ code coverage (**Only works with GCC**)
-- **Make or Ninja** – For compiling tests
+- **CMake (cmake)** – Build system for compiling tests
+- **Make (make) or Ninja (ninja)** – For compiling tests
+- **`lcov`** – Required for C++ code coverage (**With GCC**)
 
 **C++ code coverage is only supported with GCC**
 - If using **Clang or MSVC**, code coverage will not be available.
 - Windows users must run tests inside **WSL with GCC/`lcov`**.
 
 ### Python Dependencies
-- **pytest** – Python unit testing framework
-- **pytest-cov** –  Python code coverage tool
+The Python dependencies required for both application and testing are listed in the `requirements.txt` file.
 
 ### Installation
 #### 1. Linux/WSL
 ```sh
-sudo apt update && sudo apt install -y git cmake gcc g++ lcov liblapack-dev libopenblas-dev make pipx python3.12 python3.12-venv
+sudo apt update && sudo apt install -y git cmake gcc g++ lcov liblapack-dev libopenblas-dev make ninja pipx python3.12 python3.12-venv
 sudo pipx ensure path
 
 sudo pipx install conan
@@ -49,10 +48,7 @@ pip install -r requirements.txt
 
 #### 2. macOS
 ```sh
-brew install cmake conan git gcc lcov lapack make openblas python@3.12
-
-conan remote add conancenter https://center2.conan.io
-conan remote add artifactory https://conan.mrgi23.com/artifactory/api/conan/Conan-Index
+brew update && brew install python@3.12
 
 python -m venv .venv
 source .venv/bin/activate
@@ -80,11 +76,11 @@ Integration tests verify that the various components of the Programmable Signal 
 ```sh
 cd tests
 conan install . --build=missing
-cmake --preset conan-release
+cmake -G Ninja --preset conan-release
 cmake --build --preset conan-release
 cd build/Release
-make unit # Unit Tests
-make integration # Integration Tests
+ninja unit # Unit Tests
+ninja integration # Integration Tests
 ```
 
 ### Python Tests
@@ -109,17 +105,17 @@ Code coverage ensures tests sufficiently exercise the codebase, identifying test
 
 ### Generating Coverage Reports
 #### C++ Code Coverage
-C++ code coverage is generated using **`lcov`**, which only works with **GCC**.
+C++ code coverage is generated using GCC's **`lcov`**, used with **GCC**.
 **MSVC and MinGW are not supported for code coverage.**
 - Linux/macOS: **Native support with GCC**
 - Windows: **Must use WSL with GCC**
 ```sh
 cd tests
 conan install . --build=missing
-cmake --preset conan-release
-cmake --build --preset conan-release
+cmake -G Ninja --preset conan-release
+cmake --build --preset conan-release -j$(nproc)
 cd build/Release
-make coverage
+ninja coverage
 ```
 #### Python Code Coverage
 ```sh
