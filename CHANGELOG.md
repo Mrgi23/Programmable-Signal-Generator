@@ -1,4 +1,13 @@
 
+<a name="v1.1.1"></a>
+## [v1.1.1](https://gitlab.com/Mrgi23/programmable-signal-generator/compare/v1.1.0...v1.1.1) (2026-04-16)
+
+### Maintenance
+
+* Added changes log for release v1.1.0
+* Update Conan dependencies
+
+
 <a name="v1.1.0"></a>
 ## [v1.1.0](https://gitlab.com/Mrgi23/programmable-signal-generator/compare/v1.0.1...v1.1.0) (2026-04-15)
 
@@ -13,6 +22,10 @@
 ### Documentation
 
 * Updated documentation and added code docstring
+
+### Maintenance
+
+* Added changes log for release v1.1.0
 
 ### Formatting
 
