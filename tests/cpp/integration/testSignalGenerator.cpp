@@ -28,7 +28,7 @@ TEST_F(TestSignalGenerator, testSignalGenerator) {
     uint nNyquist = 4;
 
     vector<complex<double>> signal;
-    utils::readFile("../../data/testSignal.txt", signal);
+    utils::readFile("../../../data/testSignal.txt", signal);
     uint N = signal.size();
 
     // Compute the result.

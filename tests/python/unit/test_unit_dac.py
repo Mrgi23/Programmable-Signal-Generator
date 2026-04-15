@@ -45,7 +45,7 @@ def test_dac_valid_output(mocker, dac):
 
     # Test the result.
     max_value = np.max(analog[:analog.size//2])
-    
+
     assert(analog.size == n_nyquist * digital.size)
     assert(analog[int(fs - f)] == max_value), "Original spectral component must be at fs - f."
     assert(np.all(analog[spec] > 0.001 * max_value)), "Spectral replicas must be above 0.1% of maximum value."
@@ -55,5 +55,5 @@ def test_dac_invalid_input(dac):
     with pytest.raises(ValueError, match="DAC.__kernel: Invalid reconstruction mode."):
         dac([1], "RFF")
 
-    with pytest.raises(ValueError, match="DAC.__kernel: Indalid number of Nyquist zones for the RF mode."):
+    with pytest.raises(ValueError, match="DAC.__kernel: Invalid number of Nyquist zones for the RF mode."):
         dac([1], "RF", 5)

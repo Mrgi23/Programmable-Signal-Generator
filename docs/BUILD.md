@@ -1,89 +1,59 @@
 # Programmable Signal Generator - Building Guide
 
+## Overview
+This project provides **two equivalent implementations**:
+- **C++** – for high-performance native builds
+- **Python** – for scripting and cross-platform workflows
+
+Both implementations expose the same functionality, and you can build and run either independently.
+
 ## General Requirements (All Platforms)
-- **Git** - For cloning the repository
-- **CMake (≥ 3.10)** - For configuring the C++ build
-- **C++ Compiler supporting C++20**
-    - **Linux:** `g++ (≥ 10)` or `clang++ (≥ 11)`
-    - **macOS:** `clang++` (via Xcode command-line tools) or install `g++` via Homebrew
-    - **Windows:** `MSVC (Visual Studio 2019+)` or `MinGW-w64 (≥ 10)` (for GCC)
-- **Make or Ninja** - For compiling the C++ code
-- **Python 3.10+** - Required for the Python part of the project
+## General Requirements
+- **Git** – version control
+- **Conan ≥ 2.1** – required for pulling pulling dependencies
+- **CMake ≥ 4.1** – build configuration
+- **GCC ≥ 12** – C++20 compatible compiler
+- **Make** or **Ninja** – build system
+- **Python ≥ 3.12** – required for Python implementation
 
 ## Install Dependencies by OS
-To install dependencies and run the project, ensure you have the required tools installed:
+o build and run the project, ensure you have the required tools installed:
 
 ### 1. Linux (Ubuntu/Debian)
 ```sh
-sudo apt update && sudo apt install -y git cmake g++ make python3.10 python3.10-venv liblapack-dev libopenblas-dev
-```
-For `clang` instead of `gcc`:
-```sh
-sudo apt install -y clang lld
-```
+sudo apt update && sudo apt install -y build-essential cmake gcc g++ git liblapack-dev libopenblas-dev make ninja-build pipx python3.12 python3.12-venv
+sudo pipx ensure path
 
-### 2. macOS (via Homebrew)
-To use `GNU Make` instead of `BSD Make`:
-```sh
-alias make=gmake
-```
-
-```sh
-brew install git cmake make gcc python@3.10 lapack openblas
+sudo pipx install conan
+conan remote add conancenter https://center2.conan.io
+conan remote add artifactory https://conan.mrgi23.com/artifactory/api/conan/Conan-Index
 ```
 
 ### 3. Windows
 - Install [Git for Windows](https://git-scm.com/downloads)
-- Install [CMake](https://cmake.org/download/)
-- Choose a C++ Compiler:
-    - `Microsoft Visual Studio (MSVC)`
-        - Install Visual Studio 2019 or later with the C++ CMake tools
-        - Open "x64 Native Tools Command Prompt for VS" before running commands
-    - `MinGW-w64 (GCC)`
-        - Install via MSYS2:
-            ```sh
-            pacman -S mingw-w64-x86_64-gcc mingw-w64-x86_64-make mingw-w64-x86_64-lapack mingw-w64-x86_64-openblas
-            ```
-        - Add `C:\msys64\mingw64\bin` to your system `PATH`
-- Install [Python3.10+](https://www.python.org/downloads/)
+- Install [Python3.12+](https://www.python.org/downloads/)
     - Ensure `python` and `pip` are added to the system `PATH`
 
 ## Build
 ### **Clone the Repository**
 Clone the project using SSH:
 ```sh
-git clone git@gitlab.com:Mrgi23/programmable-signal-generator.git
-cd programmable-signal-generator
+git clone git@github.com:Mrgi23/Programmable-Signal-Generator.git
+cd Programmable-Signal-Generator
 ```
 
-### Setup for C++
-Create a build/ directory, generate Makefiles with CMake, and compile:
-
-#### 1. Linux/macOS
+### C++
+Pull the dependencies using Conan, generate Makefiles with CMake, and compile:
 ```sh
-mkdir -p build && cd build
-cmake ..
-make
+conan install . --build=missing
+cmake -G Ninja --preset conan-release
+cmake --build --preset conan-release
 ```
 
-#### 2. Windows
-- `Microsoft Visual Studio (MSVC)`:
-    ```sh
-    mkdir build && cd build
-    cmake -G "Visual Studio 17 2022" ..
-    cmake --build . --config
-    ```
-- `MinGW-w64 (GCC)`:
-    ```sh
-    mkdir build && cd build
-    cmake -G "MinGW Makefiles" ..
-    mingw32-make
-    ```
-
-### Setup for Python
+### Python
 Create and activate a virtual environment (optional), and install dependencies:
 
-#### 1. Linux/macOS
+#### 1. Linux
 ```sh
 python -m venv venv
 source venv/bin/activate
@@ -97,39 +67,31 @@ source venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-## Run the Program
-### C++
-#### 1. Linux/macOS
-```sh
-cd build
-./signalGen
-```
+## Usage
+The project provides two different entry points, depending on which implementation you want to run:
 
-#### 2. Windows
+- **C++ executable** → `bin/signalgen`
+- **Pure Python implementation** → `app/signalgen.py`
+
+### C++ Executable
 ```sh
-cd build
-.\signalGen.exe
+# From bin folder
+./signalgen
 ```
 
 ### Python
-#### 1. Linux/macOS
 ```sh
-python src/python/main.py
-```
-
-#### 2. Windows
-```sh
-python src\python\main.py
+# From root folder
+PYTHONPATH=./src/python python app/signalgen.py
 ```
 
 ## Troubleshooting
 
 | **Issue**          | **Possible Fix** |
 |--------------------|------------------|
-| `cmake` not found | Install using `sudo apt install cmake` (Linux) or `brew install cmake` (macOS), or download from [cmake.org](https://cmake.org/download/) (Windows). |
-| `make` not found | Use `gmake` on macOS, `mingw32-make` on Windows (MinGW), or `cmake --build .` for MSVC. |
-| Compiler errors | Ensure your compiler supports C++20 (`g++ --version`, `clang++ --version`, or `cl.exe`). |
-| Python version mismatch | Run `python3.10` explicitly if needed. |
+| `cmake` not found | Install using `sudo apt install cmake` |
+| Compiler errors         | Ensure `g++` version is supports C++20 (`g++ --version`). |
+| Python version mismatch | Run `python3.12` explicitly if needed. |
 
 ## Next Steps
 For general project information, see the [README](../README.md).
