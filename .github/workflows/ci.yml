@@ -94,7 +94,8 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p "${COVERAGE_PY_DIR}"
-          pytest --cov=./src/python --cov-config=<(printf "[run]\nomit = src/python/main.py") --cov-report=term --cov-report=html:"${COVERAGE_PY_DIR}" --cov-report=xml:coverage-python.xml tests/python
+          export PYTEST_ADDOPTS="--cov-report=html:${COVERAGE_PY_DIR} --cov-report=xml:coverage-python.xml --junitxml=results-python.xml"
+          PYTHONPATH=./src/python pytest
 
       - name: Upload code coverage to Codecov
         uses: codecov/codecov-action@v5

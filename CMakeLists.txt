@@ -1,32 +1,37 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.28)
 
-# Declare the project.
+# ===== Project =====
 project(ProgrammableSignalGenerator)
-
-# Set C++ standard
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Find dependencies
-find_package(armadillo REQUIRED)
-find_package(GTest REQUIRED)
-find_package(liquid-dsp REQUIRED)
-
-# Set ROOT_DIR
+# ===== Root Directory =====
 get_filename_component(ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}" ABSOLUTE)
 
-# Include project headers
-include_directories("${ROOT_DIR}/inc")
+# ===== Set Variables =====
+set(APP_DIR "${ROOT_DIR}/app")
+set(OUTPUT_DIR "${ROOT_DIR}/bin" CACHE PATH "Output Directory")
+set(MODULE_NAME "signalgen" CACHE STRING "Output Module Name")
+set(INCLUDE_DIR "${ROOT_DIR}/inc" CACHE PATH "C++ Headers")
+set(SOURCES_DIR "${ROOT_DIR}/src/cpp" CACHE PATH "C++ Sources")
+file(GLOB CXX_SOURCES "${SOURCES_DIR}/*.cpp")
 
-# Collect all source files from src/ directory
-file(GLOB CXX_SOURCES "${ROOT_DIR}/src/cpp/*.cpp")
+# ===== Additional Dependencies =====
+find_package(armadillo REQUIRED)
+find_package(liquid-dsp REQUIRED)
 
-# Create a single test executable
-if(WIN32)
-  add_executable(signalGen.exe ${CXX_SOURCES})
-else()
-  add_executable(signalGen ${CXX_SOURCES})
-endif()
+# ===== Add Additional Sources =====
+list(APPEND CXX_SOURCES "${APP_DIR}/main.cpp")
 
-# Link with Armadillo and LiquidDSP
-target_link_libraries(signalGen armadillo::armadillo liquid-dsp::liquid-dsp)
+# ===== Executable =====
+add_executable(signalgen_exe "${CXX_SOURCES}")
+
+target_include_directories(signalgen_exe PRIVATE "${INCLUDE_DIR}")
+
+target_link_libraries(signalgen_exe armadillo::armadillo liquid-dsp::liquid-dsp)
+
+set_target_properties(
+  signalgen_exe PROPERTIES
+  OUTPUT_NAME "${MODULE_NAME}"
+  RUNTIME_OUTPUT_DIRECTORY "${OUTPUT_DIR}"
+)

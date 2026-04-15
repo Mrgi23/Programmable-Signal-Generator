@@ -1,29 +1,27 @@
-cmake_minimum_required(VERSION 3.25)
+cmake_minimum_required(VERSION 3.28)
 
-# Set C++ standard
+# ===== Project =====
+project(Tests)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Declare the project.
-project(Tests)
-
-# Set ROOT_DIR
+# ===== Root Directory =====
 get_filename_component(ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/.." ABSOLUTE)
-add_compile_definitions(PROJECT_ROOT="${ROOT_DIR}")
 
-# Find dependencies
+# ===== Set Variables =====
+set(INCLUDE_DIR "${ROOT_DIR}/inc" CACHE PATH "C++ Headers")
+set(SOURCES_DIR "${ROOT_DIR}/src/cpp" CACHE PATH "C++ Sources")
+file(GLOB CXX_SOURCES "${SOURCES_DIR}/*.cpp")
+
+# ===== Additional Dependencies =====
 find_package(armadillo REQUIRED)
 find_package(GTest REQUIRED)
 find_package(liquid-dsp REQUIRED)
 
-# Targets
-set(INCLUDE_DIR "${ROOT_DIR}/inc")
-file(GLOB CXX_SOURCES "${ROOT_DIR}/src/cpp/*.cpp")
-list(REMOVE_ITEM CXX_SOURCES "${ROOT_DIR}/src/cpp/main.cpp")
-
+# ===== Targets =====
 set(TESTS_DIR "${ROOT_DIR}/tests/cpp")
 
-# Unit
+# ----- Unit Tests -----
 file(GLOB UNIT_TEST_SOURCES "${TESTS_DIR}/unit/*.cpp")
 add_executable(unitTests "${CXX_SOURCES}" "${UNIT_TEST_SOURCES}")
 
@@ -44,7 +42,7 @@ add_custom_target(
   WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
 )
 
-# Integration
+# ----- Integration Tests -----
 file(GLOB INTEGRATION_TEST_SOURCES "${ROOT_DIR}/tests/cpp/integration/*.cpp")
 add_executable(integrationTests "${INTEGRATION_TEST_SOURCES}" "${CXX_SOURCES}")
 
@@ -65,7 +63,7 @@ add_custom_target(
   WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
 )
 
-# Enable code coverage flags
+# ===== Coverage =====
 target_compile_options(unitTests PRIVATE --coverage -O0 -g)
 target_link_options(unitTests PRIVATE --coverage)
 
