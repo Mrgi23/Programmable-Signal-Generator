@@ -17,8 +17,8 @@ set(SOURCES_DIR "${ROOT_DIR}/src/cpp" CACHE PATH "C++ Sources")
 file(GLOB CXX_SOURCES "${SOURCES_DIR}/*.cpp")
 
 # ===== Additional Dependencies =====
-find_package(armadillo REQUIRED)
-find_package(liquid-dsp REQUIRED)
+find_package(Armadillo REQUIRED)
+find_package(LiquidDSP REQUIRED)
 
 # ===== Add Additional Sources =====
 list(APPEND CXX_SOURCES "${APP_DIR}/main.cpp")
@@ -28,7 +28,7 @@ add_executable(signalgen_exe "${CXX_SOURCES}")
 
 target_include_directories(signalgen_exe PRIVATE "${INCLUDE_DIR}")
 
-target_link_libraries(signalgen_exe armadillo::armadillo liquid-dsp::liquid-dsp)
+target_link_libraries(signalgen_exe Armadillo::Armadillo LiquidDSP::LiquidDSP)
 
 set_target_properties(
   signalgen_exe PROPERTIES
