@@ -14,9 +14,9 @@ set(SOURCES_DIR "${ROOT_DIR}/src/cpp" CACHE PATH "C++ Sources")
 file(GLOB CXX_SOURCES "${SOURCES_DIR}/*.cpp")
 
 # ===== Additional Dependencies =====
-find_package(armadillo REQUIRED)
+find_package(Armadillo REQUIRED)
 find_package(GTest REQUIRED)
-find_package(liquid-dsp REQUIRED)
+find_package(LiquidDSP REQUIRED)
 
 # ===== Targets =====
 set(TESTS_DIR "${ROOT_DIR}/tests/cpp")
@@ -28,11 +28,11 @@ add_executable(unitTests "${CXX_SOURCES}" "${UNIT_TEST_SOURCES}")
 target_include_directories(unitTests PRIVATE "${INCLUDE_DIR}")
 
 target_link_libraries(unitTests PRIVATE
-  armadillo::armadillo
+  Armadillo::Armadillo
   GTest::gtest
   GTest::gtest_main
   GTest::gmock
-  liquid-dsp::liquid-dsp
+  LiquidDSP::LiquidDSP
   pthread
 )
 
@@ -49,11 +49,11 @@ add_executable(integrationTests "${INTEGRATION_TEST_SOURCES}" "${CXX_SOURCES}")
 target_include_directories(integrationTests PRIVATE "${INCLUDE_DIR}")
 
 target_link_libraries(integrationTests PRIVATE
-  armadillo::armadillo
+  Armadillo::Armadillo
   GTest::gtest
   GTest::gtest_main
   GTest::gmock
-  liquid-dsp::liquid-dsp
+  LiquidDSP::LiquidDSP
   pthread
 )
 
