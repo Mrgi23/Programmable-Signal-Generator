@@ -1,63 +1,40 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.28)
 
-# Set C++ standard
+# ===== Project =====
+project(Tests)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Declare the project.
-project(Tests)
-
-# Set ROOT_DIR
+# ===== Root Directory =====
 get_filename_component(ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/.." ABSOLUTE)
 
-# Includes
-include(FetchContent)
+# ===== Set Variables =====
+set(INCLUDE_DIR "${ROOT_DIR}/inc" CACHE PATH "C++ Headers")
+set(SOURCES_DIR "${ROOT_DIR}/src/cpp" CACHE PATH "C++ Sources")
+file(GLOB CXX_SOURCES "${SOURCES_DIR}/*.cpp")
 
-# Fetch Armadillo
-FetchContent_Declare(
-  armadillo
-  GIT_REPOSITORY https://gitlab.com/conradsnicta/armadillo-code.git
-  GIT_TAG        14.0.2  # Use the desired version tag
-)
-FetchContent_MakeAvailable(armadillo)
+# ===== Additional Dependencies =====
+find_package(armadillo REQUIRED)
+find_package(GTest REQUIRED)
+find_package(liquid-dsp REQUIRED)
 
-# Fetch Google Test
-FetchContent_Declare(
-    googletest
-    GIT_REPOSITORY https://github.com/google/googletest.git
-    GIT_TAG v1.16.0
-)
-FetchContent_MakeAvailable(googletest)
-
-# Fetch LiquidDSP
-FetchContent_Declare(
-  liquid_dsp
-  GIT_REPOSITORY https://github.com/jgaeddert/liquid-dsp.git
-  GIT_TAG        v1.7.0
-)
-FetchContent_MakeAvailable(liquid_dsp)
-
-# Targets
-set(INCLUDE_DIR "${ROOT_DIR}/inc")
-file(GLOB CXX_SOURCES "${ROOT_DIR}/src/cpp/*.cpp")
-list(REMOVE_ITEM CXX_SOURCES "${ROOT_DIR}/src/cpp/main.cpp")
-
+# ===== Targets =====
 set(TESTS_DIR "${ROOT_DIR}/tests/cpp")
 
-# Unit
+# ----- Unit Tests -----
 file(GLOB UNIT_TEST_SOURCES "${TESTS_DIR}/unit/*.cpp")
 add_executable(unitTests "${CXX_SOURCES}" "${UNIT_TEST_SOURCES}")
 
-target_include_directories(
-  unitTests PRIVATE
-  "${INCLUDE_DIR}"
-  "${armadillo_SOURCE_DIR}/include"
-  "${gtest_SOURCE_DIR}/include"
-  "${gmock_SOURCE_DIR}/include"
-  "${liquid_dsp_SOURCE_DIR}/include"
-)
+target_include_directories(unitTests PRIVATE "${INCLUDE_DIR}")
 
-target_link_libraries(unitTests PRIVATE armadillo gtest gtest_main gmock liquid pthread)
+target_link_libraries(unitTests PRIVATE
+  armadillo::armadillo
+  GTest::gtest
+  GTest::gtest_main
+  GTest::gmock
+  liquid-dsp::liquid-dsp
+  pthread
+)
 
 add_custom_target(
   unit
@@ -65,20 +42,20 @@ add_custom_target(
   WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
 )
 
-# Integration
+# ----- Integration Tests -----
 file(GLOB INTEGRATION_TEST_SOURCES "${ROOT_DIR}/tests/cpp/integration/*.cpp")
 add_executable(integrationTests "${INTEGRATION_TEST_SOURCES}" "${CXX_SOURCES}")
 
-target_include_directories(
-  integrationTests PRIVATE
-  "${INCLUDE_DIR}"
-  "${armadillo_SOURCE_DIR}/include"
-  "${gtest_SOURCE_DIR}/include"
-  "${gmock_SOURCE_DIR}/include"
-  "${liquid_dsp_SOURCE_DIR}/include"
-)
+target_include_directories(integrationTests PRIVATE "${INCLUDE_DIR}")
 
-target_link_libraries(integrationTests PRIVATE armadillo gtest gtest_main gmock liquid pthread)
+target_link_libraries(integrationTests PRIVATE
+  armadillo::armadillo
+  GTest::gtest
+  GTest::gtest_main
+  GTest::gmock
+  liquid-dsp::liquid-dsp
+  pthread
+)
 
 add_custom_target(
   integration
@@ -86,7 +63,7 @@ add_custom_target(
   WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
 )
 
-# Enable code coverage flags
+# ===== Coverage =====
 target_compile_options(unitTests PRIVATE --coverage -O0 -g)
 target_link_options(unitTests PRIVATE --coverage)
 

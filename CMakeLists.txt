@@ -1,52 +1,37 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.28)
 
-# Declare the project.
+# ===== Project =====
 project(ProgrammableSignalGenerator)
-
-# Set C++ standard
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Includes
-include(FetchContent)
-
-# Fetch Armadillo
-FetchContent_Declare(
-  armadillo
-  GIT_REPOSITORY https://gitlab.com/conradsnicta/armadillo-code.git
-  GIT_TAG        14.0.2  # Use the desired version tag
-)
-FetchContent_MakeAvailable(armadillo)
-
-# Fetch LiquidDSP
-FetchContent_Declare(
-  liquid_dsp
-  GIT_REPOSITORY https://github.com/jgaeddert/liquid-dsp.git
-  GIT_TAG        v1.7.0
-)
-FetchContent_MakeAvailable(liquid_dsp)
-
-# Set ROOT_DIR
+# ===== Root Directory =====
 get_filename_component(ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}" ABSOLUTE)
 
-# Include Armadillo
-include_directories(SYSTEM "${armadillo_SOURCE_DIR}/include")
+# ===== Set Variables =====
+set(APP_DIR "${ROOT_DIR}/app")
+set(OUTPUT_DIR "${ROOT_DIR}/bin" CACHE PATH "Output Directory")
+set(MODULE_NAME "signalgen" CACHE STRING "Output Module Name")
+set(INCLUDE_DIR "${ROOT_DIR}/inc" CACHE PATH "C++ Headers")
+set(SOURCES_DIR "${ROOT_DIR}/src/cpp" CACHE PATH "C++ Sources")
+file(GLOB CXX_SOURCES "${SOURCES_DIR}/*.cpp")
 
-# Include LiquidDSP
-include_directories(SYSTEM "${liquid_dsp_SOURCE_DIR}/include")
+# ===== Additional Dependencies =====
+find_package(armadillo REQUIRED)
+find_package(liquid-dsp REQUIRED)
 
-# Include project headers
-include_directories("${ROOT_DIR}/inc")
+# ===== Add Additional Sources =====
+list(APPEND CXX_SOURCES "${APP_DIR}/main.cpp")
 
-# Collect all source files from src/ directory
-file(GLOB CXX_SOURCES "${ROOT_DIR}/src/cpp/*.cpp")
+# ===== Executable =====
+add_executable(signalgen_exe "${CXX_SOURCES}")
 
-# Create a single test executable
-if(WIN32)
-  add_executable(signalGen.exe ${CXX_SOURCES})
-else()
-  add_executable(signalGen ${CXX_SOURCES})
-endif()
+target_include_directories(signalgen_exe PRIVATE "${INCLUDE_DIR}")
 
-# Link with Armadillo and LiquidDSP
-target_link_libraries(signalGen armadillo liquid)
+target_link_libraries(signalgen_exe armadillo::armadillo liquid-dsp::liquid-dsp)
+
+set_target_properties(
+  signalgen_exe PROPERTIES
+  OUTPUT_NAME "${MODULE_NAME}"
+  RUNTIME_OUTPUT_DIRECTORY "${OUTPUT_DIR}"
+)

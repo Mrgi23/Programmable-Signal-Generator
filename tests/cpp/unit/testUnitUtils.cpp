@@ -51,7 +51,7 @@ TEST(TestUtils, linspaceValidOutput) {
 
 TEST(TestUtils, readFileValidOutput) {
     // Define the input.
-    string path = "../../data/testSignal.txt";
+    string path = "../../../data/testSignal.txt";
     vector<complex<double>> signal;
 
     // Compute the result.

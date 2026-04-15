@@ -9,9 +9,9 @@ runs:
         set -euo pipefail
         sudo apt-get update
         sudo apt-get install -y --no-install-recommends \
-          clang \
-          cmake \
-          lcov \
-          libopenblas-dev \
-          liblapack-dev \
-          llvm
+          clang cmake lcov libopenblas-dev liblapack-dev llvm pipx
+
+        sudo pipx ensurepath && sudo pipx install conan
+        conan profile detect --force
+        conan remote add conancenter https://center2.conan.io --force
+        conan remote add artifactory https://conan.mrgi23.com/artifactory/api/conan/Conan-Index --force
